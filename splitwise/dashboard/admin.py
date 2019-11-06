@@ -3,6 +3,6 @@ from .models import *
 
 # Register your models here.
 admin.site.register(User)
-admin.site.register(Groups)
+admin.site.register(Group)
 admin.site.register(Transaction)
 admin.site.register(TransactionDetail)
