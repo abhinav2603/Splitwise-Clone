@@ -9,7 +9,7 @@ from .models import User
 # Create your views here.
 def index(request):
 	if request.user.is_authenticated:
-		return redirect("dashboard:dashboard",request.user.id);
+		return redirect("dashboard:dashboard");
 	else:
 		return HttpResponse("No Dashboard");
 
@@ -52,6 +52,7 @@ def login_request(request):
 		template_name = "dashboard/login.html",
 		context={"form":form})
 
-def personal_page(request,user_id):
+def personal_page(request):
+	user_id=request.user.id
 	user=get_object_or_404(User, pk=user_id)
 	return render(request,'dashboard/pers_page.html',{'user':user});
