@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import User as myUser, Group as myGroup
+from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail
 
 # Create your views here.
 def index(request):
@@ -65,7 +65,8 @@ def friend_page(request,friend_id):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	friend=get_object_or_404(myUser, pk=friend_id)
+	transactions=Transaction.objects.filter(participants__in=[user]).filter(participants__in=[friend])
 	return render(request,'dashboard/friend_page.html',{
 		'user':user,
 		'friend':friend,
-		})
+		'transactions':transactions})
