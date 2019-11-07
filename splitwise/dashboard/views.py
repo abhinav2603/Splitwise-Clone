@@ -11,7 +11,7 @@ def index(request):
 	if request.user.is_authenticated:
 		return redirect("dashboard:dashboard");
 	else:
-		return HttpResponse("No Dashboard");
+		return redirect("dashboard:login");
 
 def register(request):
 	if request.method == "POST":
@@ -58,5 +58,14 @@ def login_request(request):
 
 def personal_page(request):
 	user_id=request.user.id
-	user=get_object_or_404(User, pk=user_id)
+	user=get_object_or_404(myUser, pk=user_id)
 	return render(request,'dashboard/pers_page.html',{'user':user});
+
+def friend_page(request,friend_id):
+	user_id=request.user.id
+	user=get_object_or_404(myUser, pk=user_id)
+	friend=get_object_or_404(myUser, pk=friend_id)
+	return render(request,'dashboard/friend_page.html',{
+		'user':user,
+		'friend':friend,
+		})

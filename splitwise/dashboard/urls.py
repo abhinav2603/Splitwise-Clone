@@ -9,4 +9,5 @@ urlpatterns = [
     path("logout", views.logout_request, name="logout"),
     path("login", views.login_request, name="login"),
     path('dashboard',views.personal_page,name='dashboard'),
+    path('friends/<int:friend_id>',views.friend_page,name='friend')
 ]

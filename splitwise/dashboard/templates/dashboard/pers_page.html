@@ -10,7 +10,7 @@
 {% block content %}
 	<ul>
 	{% for friend in user.friends.all %}
-		<li> {{ friend.user_name }}</li>
+		<li><a href="{% url 'dashboard:friend' friend.id %}">{{ friend.user_name }}</a></li>
 	{%endfor%}
 	</ul>
 {% endblock %}
