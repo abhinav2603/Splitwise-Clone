@@ -24,6 +24,7 @@ class Transaction(models.Model):
 	title=models.CharField(max_length=140)
 	trans_type=models.CharField(max_length=10)
 	date=models.DateTimeField()
+	group=models.ForeignKey(Group,on_delete=models.CASCADE,default=1)
 	participants=models.ManyToManyField(User)
 	def __str__(self):
 		return self.title
@@ -31,7 +32,6 @@ class Transaction(models.Model):
 class TransactionDetail(models.Model):
 	trans=models.ForeignKey(Transaction,on_delete=models.CASCADE)
 	user=models.ForeignKey(User,on_delete=models.CASCADE)
-	group=models.ForeignKey(Group,on_delete=models.CASCADE)
 	lent=models.FloatField()
 	class Meta:
 		unique_together=(('trans','user'),)
