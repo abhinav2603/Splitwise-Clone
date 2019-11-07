@@ -75,9 +75,11 @@ def group_page(request,group_id):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	group = get_object_or_404(myGroup,group_id=group_id)
+	transactions=group.transaction_set.all()
 	return render(request,'dashboard/group_page.html',{
 		'group':group,
 		'user':user,
+		'transactions':transactions,
 		});
 
 def my_group(request):
