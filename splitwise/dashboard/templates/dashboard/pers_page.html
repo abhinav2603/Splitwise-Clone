@@ -1,0 +1,19 @@
+{% extends "dashboard/header.html" %}
+
+{% block title %}{{ user.user_name }}{% endblock %}
+
+{% block brand %}{{ user.user_name }}{% endblock %}
+
+{% block Friendsactive %}active{% endblock %}
+
+
+{% block content %}
+	<ul>
+	{% for friend in user.friends.all %}
+		<li><a href="{% url 'dashboard:friend' friend.id %}">{{ friend.user_name }}</a></li>
+	{%endfor%}
+	</ul>
+{% endblock %}
+
+
+

@@ -1,0 +1,25 @@
+{% extends "dashboard/header.html" %}
+
+{% block title %}{{ user.user_name }}{% endblock %}
+
+{% block brand %}{{ user.user_name }} and {{ friend.user_name }}{% endblock %}
+
+{% block Friendsactive %}active{% endblock %}
+
+
+{% block content %}
+	<ul>
+	{% for transaction in transactions %}
+		<li>{{ transaction.title }}</li>
+		<ul>
+			{% for transdet in transaction.transactiondetail_set.all %}
+			{% if transdet.group.group_id != 0 %}
+			<li>{{ transdet.user.user_name }} lent {{ transdet.lent }} rupees in the group {{ transdet.group.group_name }}</li>
+			{% else %}
+			<li>{{ transdet.user.user_name }} lent {{ transdet.lent }} rupees outside any group</li>
+			{% endif %}
+			{% endfor %}
+		</ul>
+	{%endfor%}
+	</ul>
+{% endblock %}
