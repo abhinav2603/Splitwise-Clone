@@ -8,7 +8,10 @@ from .models import User
 
 # Create your views here.
 def index(request):
-	return HttpResponse("Dashboard");
+	if request.user.is_authenticated:
+		return redirect("dashboard:dashboard",request.user.id);
+	else:
+		return HttpResponse("No Dashboard");
 
 def register(request):
 	if request.method == "POST":
