@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
@@ -11,7 +10,6 @@ from .models import User
 def index(request):
 	return HttpResponse("Dashboard");
 
-<<<<<<< HEAD
 def register(request):
 	if request.method == "POST":
 		form = UserCreationForm(request.POST)
@@ -26,7 +24,7 @@ def register(request):
 			template_name = "dashboard/register.html",
 			context={"form":form})
 
-def logout_request(request):http://127.0.0.1:8000/dashboard/lgoin
+def logout_request(request):
 	logout(request)
 	messages.info(request, "Logged out successfully!")
 	return redirect("dashboard:index")
