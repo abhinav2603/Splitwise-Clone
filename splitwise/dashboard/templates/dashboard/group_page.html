@@ -1,0 +1,17 @@
+{% extends 'dashboard/header.html' %}
+
+{% block title %}{{ group.group_name }}{% endblock %}
+
+{% block brand %}{{ user.user_name }} in {{ group.group_name }} {% endblock %}
+
+{% block Groupsactive %}active{% endblock %}
+
+
+{% block content %}
+<ul>
+	<p>{{ group.group_name }}</p>
+		{% for folk in group.users.all %}
+			<li>{{ folk.user_name }}</li>
+		{%endfor%}
+</ul>	
+{% endblock %}

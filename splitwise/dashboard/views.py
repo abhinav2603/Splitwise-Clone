@@ -70,3 +70,17 @@ def friend_page(request,friend_id):
 		'user':user,
 		'friend':friend,
 		'transactions':transactions})
+
+def group_page(request,group_id):
+	user_id=request.user.id
+	user=get_object_or_404(myUser, pk=user_id)
+	group = get_object_or_404(myGroup,group_id=group_id)
+	return render(request,'dashboard/group_page.html',{
+		'group':group,
+		'user':user,
+		});
+
+def my_group(request):
+	user_id = request.user.id
+	user = get_object_or_404(myUser, pk=user_id)
+	return render(request,'dashboard/pers_group.html',{'user':user});
