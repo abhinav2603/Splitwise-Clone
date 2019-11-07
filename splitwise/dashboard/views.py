@@ -1,13 +1,17 @@
-from django.shortcuts import render, redirect
+<<<<<<< HEAD
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 
+from .models import User
+
 # Create your views here.
 def index(request):
 	return HttpResponse("Dashboard");
 
+<<<<<<< HEAD
 def register(request):
 	if request.method == "POST":
 		form = UserCreationForm(request.POST)
@@ -46,3 +50,7 @@ def login_request(request):
 	return render(request = request,
 		template_name = "dashboard/login.html",
 		context={"form":form})
+
+def personal_page(request,user_id):
+	user=get_object_or_404(User, pk=user_id)
+	return render(request,'dashboard/pers_page.html',{'user':user});
