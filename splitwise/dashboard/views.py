@@ -3,8 +3,8 @@ from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
-
-from .models import User
+from django.contrib.auth.models import User
+from .models import User as myUser, Group as myGroup
 
 # Create your views here.
 def index(request):
@@ -20,6 +20,10 @@ def register(request):
 		username = form.cleaned_data.get('username')
 		login(request,user)
 		messages.success(request, f"New account created: {username}")
+		newUser=myUser(user_name=username)
+		newUser.save()
+		zeroGrp=myGroup.objects.get(group_id=0)
+		zeroGrp.users.add(newUser)
 		return redirect("dashboard:index")
 	
 	form = UserCreationForm
