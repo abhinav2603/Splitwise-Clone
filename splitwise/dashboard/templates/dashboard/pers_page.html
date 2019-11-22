@@ -13,6 +13,9 @@
 		<li><a href="{% url 'dashboard:friend' friend.id %}">{{ friend.user_name }}</a></li>
 	{%endfor%}
 	</ul>
+	<div>
+		<img src={{ user.profile.image}}  width="500" height="600">
+	</div>
 {% endblock %}
 
 
