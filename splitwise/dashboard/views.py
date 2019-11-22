@@ -23,7 +23,7 @@ def register(request):
 		profile = profile_form.save(commit=False)
 		profile.user = user
 
-		user.save()
+		#user.save()
 		profile.save()
 		login(request,user)
 		username = form.cleaned_data.get('username')
