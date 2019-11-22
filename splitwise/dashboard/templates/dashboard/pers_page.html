@@ -13,8 +13,16 @@
 		<li><a href="{% url 'dashboard:friend' friend.id %}">{{ friend.user_name }}</a></li>
 	{%endfor%}
 	</ul>
-	<div>
+	<!--<div>
 		<img src={{ user.profile.image}}  width="500" height="600">
+	</div>-->
+
+	<div style="background-color: #eee;width: 200px;height: 100px;border: 1px dotted black;"overflow: scroll;>
+		{% for friend in nonfriend %}
+			{% if user.user_name != friend.user_name %}
+				<p>{{friend}}</p>
+			{% endif %}
+		{% endfor %}
 	</div>
 {% endblock %}
 

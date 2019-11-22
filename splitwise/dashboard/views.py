@@ -68,7 +68,8 @@ def login_request(request):
 def personal_page(request):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
-	return render(request,'dashboard/pers_page.html',{'user':user});
+	nonfriend=myUser.objects.exclude(friends__in=[user])
+	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend});
 
 def friend_page(request,friend_id):
 	user_id=request.user.id
