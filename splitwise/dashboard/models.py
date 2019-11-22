@@ -3,6 +3,7 @@ from django.contrib.auth.models import User as Duser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
 # Create your models here.
 class User(models.Model):
 	user_name=models.CharField(max_length=50)
@@ -56,7 +57,8 @@ class Transaction(models.Model):
 
 class TransactionDetail(models.Model):
 	trans=models.ForeignKey(Transaction,on_delete=models.CASCADE)
-	user=models.ForeignKey(User,on_delete=models.CASCADE)
+	creditor=models.ForeignKey(User,on_delete=models.CASCADE,related_name="transaction_creditor")
+	debitor=models.ForeignKey(User,on_delete=models.CASCADE,related_name="transaction_debitor")
 	lent=models.FloatField()
 	class Meta:
-		unique_together=(('trans','user'),)
+		unique_together=(('trans','creditor','debitor'),)
