@@ -37,10 +37,30 @@ class TransactionForm(forms.ModelForm):
 class TransactionDetailForm(forms.Form):
 	amount=forms.FloatField(label='Total amount paid',min_value=0)
 	def __init__(self,*args,**kwargs):
-		participants_list=kwargs.pop('participants_list')
+		self.participants_list=kwargs.pop('participants_list')
 		super(TransactionDetailForm, self).__init__(*args, **kwargs)
-		for participant in participants_list:
-			self.fields[str(participant.id)]=forms.FloatField(label=participant.user_name+' gave')
+		for participant in self.participants_list:
+			self.fields[str(participant.id)+'gave']=forms.FloatField(label=participant.user_name+' gave')
+			self.fields[str(participant.id)+'share']=forms.FloatField(label=participant.user_name+' sharev')
+
+	def clean(self):
+		form_data=self.cleaned_data
+		total_given=0
+		total_share=0
+		participants_ids=[]
+		for participant in self.participants_list:
+			participants_ids.append(participant.id)
+
+		for i in participants_ids:
+			total_given=total_given+form_data[str(i)+'gave']
+			total_share=total_share+form_data[str(i)+'share']
+
+		if total_given!=form_data['amount']:
+			self._errors['amount']=["Total amount given by participants don't match"]
+		if total_share!=form_data['amount']:
+			self._errors['amount']=["Total share of participants don't match"]
+
+		return form_data
 
 
 

@@ -66,19 +66,21 @@ def personal_page(request):
 	user=get_object_or_404(myUser, pk=user_id)
 	nonfriend=myUser.objects.exclude(friends__in=[user])
 	formType=1
+	participants_list=[]
+	transaction=None
 	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 	if request.method=="POST":
 		if formType==1:
 			trForm=TransactionForm(request.POST, user_id=user_id)
 			if trForm.is_valid():
-				participants_list=handleTransaction(request)
+				participants_list,transaction=handleTransaction(request)
 				formType=2
 				transactionForm=TransactionDetailForm(participants_list=participants_list)
 			
 		else:
-			trForm=TransactionDetailForm()
+			trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
 			if trForm.is_valid():
-				handleTransactionDetail(request)
+				handleTransactionDetail(request,participants_list,transaction)
 				formType=1
 
 	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm});
@@ -100,7 +102,42 @@ def handleTransaction(request):
 		#newTransaction.participants.add(user)
 		participants_list.append(user)
 	#newTransaction.save()
-	return participants_list
+	return (participants_list,transaction)
+
+def handleTransactionDetail(request,participants_list,transaction):
+	user_id=request.user.id
+	trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
+	if trForm.is_valid():
+		gave_extra=[]
+		gave_less=[]
+		for participant in participants_list:
+			given=trForm.cleaned_data.get(str(participant.id)+'gave')-trForm.cleaned_data.get(str(participant.id)+'share')
+			if given>0:
+				gave_extra.append[(participant,given)]
+			else:
+				gave_less.append[(participant,-given)]
+		gave_extra.sort(key=lambda tup:tup[1],reverse=True)
+		gave_less.sort(key=lambda tup:tup[1], reverse=True)
+
+		while len(gave_extra)!=0:
+			if gave_extra[0][1]>gave_less[0][1]:
+				newTransactionDetail=TransactionDetail(trans=transaction,creditor=gave_extra[0][0],debitor=gave_less[0][0],lent=gave_less[0][1])
+				newTransactionDetail.save()
+				gave_extra[0][1]=gave_extra[0][1]=gave_less[0][1]
+				del gave_less[0]
+				gave_extra.sort(key=lambda tup:tup[1],reverse=True)
+				gave_less.sort(key=lambda tup:tup[1], reverse=True)
+			else:
+				newTransactionDetail=TransactionDetail(trans=transaction,creditor=gave_extra[0][0],debitor=gave_less[0][0],lent=gave_extra[0][1])
+				newTransactionDetail.save()
+				gave_less[0][1]=gave_less[0][1]=gave_extra[0][1]
+				del gave_extra[0]
+				if gave_less[0][1]==0:
+					del gave_less[0]
+				gave_extra.sort(key=lambda tup:tup[1],reverse=True)
+				gave_less.sort(key=lambda tup:tup[1], reverse=True)		
+
+
 
 def friend_page(request,friend_id):
 	user_id=request.user.id
