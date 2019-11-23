@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User as Duser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from django import forms
+from django.forms import ModelForm
 
 # Create your models here.
 class User(models.Model):
@@ -62,3 +63,22 @@ class TransactionDetail(models.Model):
 	lent=models.FloatField()
 	class Meta:
 		unique_together=(('trans','creditor','debitor'),)
+
+
+class NewGroupForm(forms.ModelForm):
+	def __init__(self,id,*args, **kwargs): # initializing your form in other words loading it
+		super(NewGroupForm, self).__init__(*args, **kwargs)
+		user = User.objects.get(pk=id) # taking user_id out of the querylist
+		self.fields['users'] = forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple(), queryset=user.friends.all())
+	class Meta:
+		model=Group
+		fields = ['group_name', 'users']
+
+
+
+
+
+
+
+
+

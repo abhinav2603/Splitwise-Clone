@@ -4,8 +4,9 @@ from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail
+from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm
 from .forms import ProfileForm
+import logging
 
 # Create your views here.
 def index(request):
@@ -89,7 +90,27 @@ def group_page(request,group_id):
 def my_group(request):
 	user_id = request.user.id
 	user = get_object_or_404(myUser, pk=user_id)
-	return render(request,'dashboard/pers_group.html',{'user':user});
+	logger = logging.getLogger(__name__)
+	if request.method=="POST":
+		GroupFormSet = modelformset_factory(Group, fields=('group_name', 'users'))
+		formset=GroupFormSet()
+		form=NewGroupForm(request.POST,id=request.user.id)
+		if form.is_valid():
+			group_name=form.cleaned_data.get('group_name')
+			participants=form.cleaned_data.get('users')
+			group_id=myGroup.objects.all().count()
+			logger.error(group_name)
+			newGrp=myGroup(group_name=group_name,group_id=group_id)
+			newGrp.save()
+			newGrp.users.add(user)
+			for part in participants:
+				newGrp.users.add(part)
+			newGrp.save()
+			return redirect("dashboard:all_groups")
+	else:
+		form=NewGroupForm(id=request.user.id)
+
+	return render(request,'dashboard/pers_group.html',{'user':user,'form':form});
 
 def addfriend(request,name):
 	user_id=request.user.id
