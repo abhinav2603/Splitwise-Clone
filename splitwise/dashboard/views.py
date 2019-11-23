@@ -90,16 +90,14 @@ def group_page(request,group_id):
 def my_group(request):
 	user_id = request.user.id
 	user = get_object_or_404(myUser, pk=user_id)
-	logger = logging.getLogger(__name__)
+	#logger = logging.getLogger(__name__)
 	if request.method=="POST":
-		GroupFormSet = modelformset_factory(Group, fields=('group_name', 'users'))
-		formset=GroupFormSet()
 		form=NewGroupForm(request.POST,id=request.user.id)
 		if form.is_valid():
 			group_name=form.cleaned_data.get('group_name')
 			participants=form.cleaned_data.get('users')
 			group_id=myGroup.objects.all().count()
-			logger.error(group_name)
+			#logger.error(group_name)
 			newGrp=myGroup(group_name=group_name,group_id=group_id)
 			newGrp.save()
 			newGrp.users.add(user)
