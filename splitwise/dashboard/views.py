@@ -32,7 +32,7 @@ def register(request):
 
 	return render(request = request,
 			template_name = "dashboard/register.html",
-			context={"form":form,"profile_form":profile_form})
+			context={"form":form})
 
 def logout_request(request):
 	logout(request)
