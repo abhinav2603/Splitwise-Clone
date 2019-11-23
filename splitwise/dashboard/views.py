@@ -15,27 +15,21 @@ def index(request):
 		return redirect("dashboard:login");
 
 def register(request):
+	form = UserCreationForm(request.POST or None)
 	if request.method == "POST":
-		form = UserCreationForm(request.POST)
-		profile_form = ProfileForm(request.POST)
-		user = form.save()
-		#user.refresh_from_db()  # load the profile instance created by the signal
-		profile = profile_form.save(commit=False)
-		profile.user = user
+		#form = UserCreationForm(request.POST)
+		if form.is_valid():
+			user = form.save()
+			username = form.cleaned_data.get('username')
+			login(request,user)
+			messages.success(request, f"New account created: {username}")
+			newUser=myUser(user_name=username)
+			newUser.save()
+			zeroGrp=myGroup.objects.get(group_id=0)
+			zeroGrp.users.add(newUser)
+			return redirect("dashboard:index")
+	#form = UserCreationForm
 
-		#user.save()
-		profile.save()
-		login(request,user)
-		username = form.cleaned_data.get('username')
-		messages.success(request, f"New account created: {username}")
-		newUser=myUser(user_name=username)
-		newUser.save()
-		zeroGrp=myGroup.objects.get(group_id=0)
-		zeroGrp.users.add(newUser)
-		return redirect("dashboard:index")
-	
-	form = UserCreationForm
-	profile_form = ProfileForm(request.POST)
 	return render(request = request,
 			template_name = "dashboard/register.html",
 			context={"form":form,"profile_form":profile_form})
