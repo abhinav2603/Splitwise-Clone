@@ -4,8 +4,11 @@ from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail
+from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, UpdatedpForm
 from .forms import RegisterForm
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def index(request):
@@ -97,5 +100,39 @@ def addfriend(request,name):
 	user=get_object_or_404(myUser, pk=user_id)
 	frnd=get_object_or_404(myUser, user_name=name)
 	user.friends.add(frnd)
-	return redirect('dashboard:dashboard');
+	return redirect('dashboard:dashboard')
+
+def userprofile(request):
+	user_id = request.user.id
+	user = get_object_or_404(myUser, pk=user_id)
+	return render(request,'dashboard/profile.html',{'user':user})
+
+def update_pic(request):
+	user_id = request.user.id
+	user = get_object_or_404(myUser, pk=user_id)
+	if request.method=="POST":
+		form=UpdatedpForm(request.POST,request.user)
+		if form.is_valid():
+			return render(request,'dashboard/changedp.html',{'user':user,'form':form});
+	else:
+		form=UpdatedpForm(request.user)
+	return render(request,'dashboard/changedp.html',{'user':user,'form':form});
+
+#@login_required
+def changePassword(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('dashboard/login.html')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'dashboard/change_password.html', {
+        'form': form
+    })
+
 	
