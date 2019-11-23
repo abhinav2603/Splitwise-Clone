@@ -40,8 +40,10 @@ class TransactionDetailForm(forms.Form):
 		self.participants_list=kwargs.pop('participants_list')
 		super(TransactionDetailForm, self).__init__(*args, **kwargs)
 		for participant in self.participants_list:
+			ide=participant.id
+			name=participant.user_name
 			self.fields[str(participant.id)+'gave']=forms.FloatField(label=participant.user_name+' gave')
-			self.fields[str(participant.id)+'share']=forms.FloatField(label=participant.user_name+' sharev')
+			self.fields[str(participant.id)+'share']=forms.FloatField(label=participant.user_name+' share')
 
 	def clean(self):
 		form_data=self.cleaned_data

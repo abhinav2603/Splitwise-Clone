@@ -97,11 +97,12 @@ def handleTransaction(request):
 	participants=trForm.cleaned_data.get('participants')
 	newTransaction=Transaction(title=title,trans_type=trans_type,date=date,group=group)
 	#newTransaction.save()
-	participants_list=[request.user]
+	participants_list=[]
 	for user in participants:
 		#newTransaction.participants.add(user)
 		participants_list.append(user)
 	#newTransaction.save()
+	participants_list.append(myUser.objects.get(pk=user_id))
 	return (participants_list,transaction)
 
 def handleTransactionDetail(request,participants_list,transaction):
