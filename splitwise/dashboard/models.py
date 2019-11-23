@@ -66,9 +66,10 @@ class TransactionDetail(models.Model):
 
 
 class NewGroupForm(forms.ModelForm):
-	def __init__(self,id,*args, **kwargs): # initializing your form in other words loading it
+	def __init__(self,*args,**kwargs): # initializing your form in other words loading it
+		user_id=kwargs.pop('user_id')
 		super(NewGroupForm, self).__init__(*args, **kwargs)
-		user = User.objects.get(pk=id) # taking user_id out of the querylist
+		user = User.objects.get(pk=user_id) # taking user_id out of the querylist
 		self.fields['users'] = forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple(), queryset=user.friends.all())
 	class Meta:
 		model=Group

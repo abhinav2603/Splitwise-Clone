@@ -92,7 +92,7 @@ def my_group(request):
 	user = get_object_or_404(myUser, pk=user_id)
 	#logger = logging.getLogger(__name__)
 	if request.method=="POST":
-		form=NewGroupForm(request.POST,id=request.user.id)
+		form=NewGroupForm(request.POST,user_id=request.user.id)
 		if form.is_valid():
 			group_name=form.cleaned_data.get('group_name')
 			participants=form.cleaned_data.get('users')
@@ -106,7 +106,7 @@ def my_group(request):
 			newGrp.save()
 			return redirect("dashboard:all_groups")
 	else:
-		form=NewGroupForm(id=request.user.id)
+		form=NewGroupForm(user_id=request.user.id)
 
 	return render(request,'dashboard/pers_group.html',{'user':user,'form':form});
 
