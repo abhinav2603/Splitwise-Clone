@@ -2,7 +2,8 @@
 
 {% block title %}{{ user.user_name }}{% endblock %}
 
-{% block brand %}{{ user.user_name }}{% endblock %}
+{% block brand %} 
+	<img src ="{{ user.dp.url }}" class="rounded-circle" alt="Cinque Terre"width=50 height=50> {{ user.user_name }}{% endblock %}
 
 {% block Friendsactive %}active{% endblock %}
 
@@ -13,9 +14,6 @@
 		<li><a href="{% url 'dashboard:friend' friend.id %}">{{ friend.user_name }}</a></li>
 	{%endfor%}
 	</ul>
-	<!--<div>
-		<img src={{ user.profile.image}}  width="500" height="600">
-	</div>-->
 
 	<div class="container">
 		<div id="accordion" style="margin-top:2%">
@@ -26,7 +24,7 @@
 			  </a>
 			</div>
 			<div id="collapseOne" class="collapse" data-parent="#accordion">
-			  <div class="card-body"style="background-color: #eee;width: 200px;height: 100px;border: 1px dotted black;"overflow: scroll;>
+			  <div class="card-body"style="background-color: #eee;width: 200px;height: 100px;border: 1px dotted black;overflow: scroll;">
 					{% for friend in nonfriend %}
 						{% if friend.user_name != "admin" %}
 							{% if user.user_name != friend.user_name %}

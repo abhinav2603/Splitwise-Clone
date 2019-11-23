@@ -7,7 +7,9 @@ from django.dispatch import receiver
 # Create your models here.
 class User(models.Model):
 	user_name=models.CharField(max_length=50)
+	email=models.EmailField(max_length=50, blank = True)
 	friends = models.ManyToManyField("self",blank=True)
+	dp=models.ImageField(upload_to='profile_pic',default='media/default.png')
 	def __str__(self):
 		return self.user_name
 #class Friends(models.Model):
@@ -22,21 +24,6 @@ class Profile(models.Model):
 	image = models.ImageField(max_length=100,blank=True)
 	location = models.CharField(max_length=30, blank=True)
 	#birth_date = models.DateField(null=True, blank=True)
-
-#@receiver(post_save, sender=User)
-#def create_user_profile(sender, instance, created, **kwargs):#
-#if created:
-#	Profile.objects.create(user=instance)
-
-#@receiver(post_save, sender=User)
-#def save_user_profile(sender, instance, **kwargs):
-#    instance.profile.save()
-
-#@receiver(post_save, sender=User)
-#def update_user_profile(sender, instance, created, **kwargs):
-#    if created:
-#        Profile.objects.create(user=instance)
- #   instance.profile.save()
 
 class Group(models.Model):
 	group_name=models.CharField(max_length=20)

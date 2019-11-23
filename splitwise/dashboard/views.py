@@ -5,7 +5,7 @@ from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail
-from .forms import ProfileForm
+from .forms import RegisterForm
 
 # Create your views here.
 def index(request):
@@ -15,15 +15,16 @@ def index(request):
 		return redirect("dashboard:login");
 
 def register(request):
-	form = UserCreationForm(request.POST or None)
+	form = RegisterForm(request.POST or None)
 	if request.method == "POST":
 		#form = UserCreationForm(request.POST)
 		if form.is_valid():
 			user = form.save()
-			username = form.cleaned_data.get('username')
+			username = form.cleaned_data.get('first_name')
+			email = form.cleaned_data.get('email')
 			login(request,user)
 			messages.success(request, f"New account created: {username}")
-			newUser=myUser(user_name=username)
+			newUser=myUser(user_name=username,email=email)
 			newUser.save()
 			zeroGrp=myGroup.objects.get(group_id=0)
 			zeroGrp.users.add(newUser)
@@ -63,7 +64,7 @@ def personal_page(request):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	nonfriend=myUser.objects.exclude(friends__in=[user])
-	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend});
+	return render(request,'dashboard/pers_page.html',{'user':user,'nonfriend':nonfriend});
 
 def friend_page(request,friend_id):
 	user_id=request.user.id
