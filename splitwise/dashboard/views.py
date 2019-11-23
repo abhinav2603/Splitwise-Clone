@@ -126,15 +126,15 @@ def update_pic(request):
 		form=UpdatedpForm()
 	return render(request,'dashboard/changeMydp.html',{'user':user,'form':form});
 
-#@login_required
-def changePassword(request):
+@login_required(login_url='dashboard/dashboard')
+def change_password(request):
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)  # Important!
             messages.success(request, 'Your password was successfully updated!')
-            return redirect('dashboard/login.html')
+            return redirect('dashboard:login')
         else:
             messages.error(request, 'Please correct the error below.')
     else:
