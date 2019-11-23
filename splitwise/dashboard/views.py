@@ -96,3 +96,11 @@ def my_group(request):
 	user_id = request.user.id
 	user = get_object_or_404(myUser, pk=user_id)
 	return render(request,'dashboard/pers_group.html',{'user':user});
+
+def addfriend(request,name):
+	user_id=request.user.id
+	user=get_object_or_404(myUser, pk=user_id)
+	frnd=get_object_or_404(myUser, user_name=name)
+	user.friends.add(frnd)
+	return redirect('dashboard:dashboard');
+	

@@ -30,7 +30,8 @@
 					{% for friend in nonfriend %}
 						{% if friend.user_name != "admin" %}
 							{% if user.user_name != friend.user_name %}
-								<p>{{friend}}</p>
+								<p><a href="{% url 'dashboard:fadd' friend.user_name %}">{{friend}}</a></p>
+								<!--<p>{{friend}}</p>-->
 							{% endif %}
 						{% endif %}
 					{% endfor %}
