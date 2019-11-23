@@ -17,12 +17,26 @@
 		<img src={{ user.profile.image}}  width="500" height="600">
 	</div>-->
 
-	<div style="background-color: #eee;width: 200px;height: 100px;border: 1px dotted black;"overflow: scroll;>
-		{% for friend in nonfriend %}
-			{% if user.user_name != friend.user_name %}
-				<p>{{friend}}</p>
-			{% endif %}
-		{% endfor %}
+	<div class="container">
+		<div id="accordion" style="margin-top:2%">
+		  <div class="card">
+			<div class="card-header">
+			  <a class="card-link" data-toggle="collapse" href="#collapseOne">
+				Add a friend
+			  </a>
+			</div>
+			<div id="collapseOne" class="collapse" data-parent="#accordion">
+			  <div class="card-body"style="background-color: #eee;width: 200px;height: 100px;border: 1px dotted black;"overflow: scroll;>
+					{% for friend in nonfriend %}
+						{% if friend.user_name != "admin" %}
+							{% if user.user_name != friend.user_name %}
+								<p>{{friend}}</p>
+							{% endif %}
+						{% endif %}
+					{% endfor %}
+				</div>
+			</div>
+		</div>
 	</div>
 {% endblock %}
 
