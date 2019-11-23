@@ -56,13 +56,16 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
-          {{ transForm.as_p }}
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
-        </div>
+        <form method="post">
+          <div class="modal-body">
+            {% csrf_token %}
+            {{ transForm.as_p }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" value="submit">Next</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

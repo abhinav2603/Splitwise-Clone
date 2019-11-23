@@ -5,7 +5,7 @@ from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm
-from .forms import ProfileForm, TransactionForm
+from .forms import ProfileForm, TransactionForm, TransactionDetailForm
 import logging
 import datetime
 
@@ -65,8 +65,42 @@ def personal_page(request):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	nonfriend=myUser.objects.exclude(friends__in=[user])
+	formType=1
 	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	if request.method=="POST":
+		if formType==1:
+			trForm=TransactionForm(request.POST, user_id=user_id)
+			if trForm.is_valid():
+				participants_list=handleTransaction(request)
+				formType=2
+				transactionForm=TransactionDetailForm(participants_list=participants_list)
+			
+		else:
+			trForm=TransactionDetailForm()
+			if trForm.is_valid():
+				handleTransactionDetail(request)
+				formType=1
+
 	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm});
+
+
+def handleTransaction(request):
+	user_id=request.user.id
+	trForm=TransactionForm(request.POST, user_id=user_id)
+	transaction=trForm.save()
+	title=trForm.cleaned_data.get('title')
+	trans_type=trForm.cleaned_data.get('trans_type')
+	date=trForm.cleaned_data.get('date')
+	group=trForm.cleaned_data.get('group')
+	participants=trForm.cleaned_data.get('participants')
+	newTransaction=Transaction(title=title,trans_type=trans_type,date=date,group=group)
+	#newTransaction.save()
+	participants_list=[request.user]
+	for user in participants:
+		#newTransaction.participants.add(user)
+		participants_list.append(user)
+	#newTransaction.save()
+	return participants_list
 
 def friend_page(request,friend_id):
 	user_id=request.user.id
