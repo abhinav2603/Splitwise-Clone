@@ -14,19 +14,20 @@ def index(request):
 		return redirect("dashboard:login");
 
 def register(request):
+	form = UserCreationForm(request.POST or None)
 	if request.method == "POST":
-		form = UserCreationForm(request.POST)
-		user = form.save()
-		username = form.cleaned_data.get('username')
-		login(request,user)
-		messages.success(request, f"New account created: {username}")
-		newUser=myUser(user_name=username)
-		newUser.save()
-		zeroGrp=myGroup.objects.get(group_id=0)
-		zeroGrp.users.add(newUser)
-		return redirect("dashboard:index")
-	
-	form = UserCreationForm
+		#form = UserCreationForm(request.POST)
+		if form.is_valid():
+			user = form.save()
+			username = form.cleaned_data.get('username')
+			login(request,user)
+			messages.success(request, f"New account created: {username}")
+			newUser=myUser(user_name=username)
+			newUser.save()
+			zeroGrp=myGroup.objects.get(group_id=0)
+			zeroGrp.users.add(newUser)
+			return redirect("dashboard:index")
+	#form = UserCreationForm
 	return render(request = request,
 			template_name = "dashboard/register.html",
 			context={"form":form})
