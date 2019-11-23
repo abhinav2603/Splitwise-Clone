@@ -5,8 +5,9 @@ from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm
-from .forms import ProfileForm
+from .forms import ProfileForm, TransactionForm
 import logging
+import datetime
 
 # Create your views here.
 def index(request):
@@ -64,7 +65,8 @@ def personal_page(request):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	nonfriend=myUser.objects.exclude(friends__in=[user])
-	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend});
+	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm});
 
 def friend_page(request,friend_id):
 	user_id=request.user.id
