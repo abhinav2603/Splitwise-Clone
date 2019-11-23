@@ -23,9 +23,14 @@
         <li class="nav-item {% block Groupsactive %}{% endblock %}">
           <a class="nav-link" href="{% url 'dashboard:all_groups' %}">Groups</a>
         </li>
-          <li class="nav-item {% block Activitiesactive %}{% endblock %}">
+        <li class="nav-item {% block Activitiesactive %}{% endblock %}">
           <a class="nav-link" href="">Activities</a>
-          </li>
+        </li>
+      </ul>
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'dashboard:logout' %}">Logout</a>
+        </li>
       </ul>
       </div>
   </nav>
