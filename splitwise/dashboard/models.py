@@ -10,7 +10,7 @@ class User(models.Model):
 	user_name=models.CharField(max_length=50)
 	email=models.EmailField(max_length=50, blank = True)
 	friends = models.ManyToManyField("self",blank=True)
-	dp=models.ImageField(upload_to='profile_pic',default='media/default.png')
+	dp=models.ImageField(upload_to='profile_pic')#,default='profile_pic/default.png')
 	def __str__(self):
 		return self.user_name
 #class Friends(models.Model):
@@ -51,7 +51,11 @@ class TransactionDetail(models.Model):
 	class Meta:
 		unique_together=(('trans','creditor','debitor'),)
 
-class UpdatedpForm(forms.ModelForm):
-	class Meta:
-		model=User
-		fields=['dp']
+class UpdatedpForm(forms.Form):
+	file=forms.FileField()
+	#class Meta:
+	#	model=User
+	#	fields=['dp']
+
+class UploadFileForm(forms.Form):
+    file = forms.ImageField()

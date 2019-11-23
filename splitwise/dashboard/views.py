@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, UpdatedpForm
+from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, UpdatedpForm, UploadFileForm
 from .forms import RegisterForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -67,7 +67,7 @@ def personal_page(request):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	nonfriend=myUser.objects.exclude(friends__in=[user])
-	return render(request,'dashboard/pers_page.html',{'user':user,'nonfriend':nonfriend});
+	return render(request,'dashboard/personal_page.html',{'user':user,'nonfriend':nonfriend});
 
 def friend_page(request,friend_id):
 	user_id=request.user.id
@@ -107,16 +107,24 @@ def userprofile(request):
 	user = get_object_or_404(myUser, pk=user_id)
 	return render(request,'dashboard/profile.html',{'user':user})
 
+
 def update_pic(request):
 	user_id = request.user.id
 	user = get_object_or_404(myUser, pk=user_id)
 	if request.method=="POST":
-		form=UpdatedpForm(request.POST,request.user)
+		form = UploadFileForm(request.POST, request.FILES)
 		if form.is_valid():
-			return render(request,'dashboard/changedp.html',{'user':user,'form':form});
+			#form.save()
+			user.dp=request.FILES['file']
+			#user.dp=form.cleaned_data.get('dp')
+			user.save()
+			#a=form.cleaned_data.get('user_name')
+			a=request.FILES['file']
+			messages.info(request, f"You are in as {a}")
+			return redirect('dashboard:index')
 	else:
-		form=UpdatedpForm(request.user)
-	return render(request,'dashboard/changedp.html',{'user':user,'form':form});
+		form=UpdatedpForm()
+	return render(request,'dashboard/changeMydp.html',{'user':user,'form':form});
 
 #@login_required
 def changePassword(request):

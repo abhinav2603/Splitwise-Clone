@@ -21,5 +21,6 @@ urlpatterns = [
     #path('accounts/', include('django.contrib.auth.urls')),
     #path('change-password/', auth_views.PasswordChangeView.as_view(success_url=reverse_lazy('account:password_change_done')),name='change_password'),
     path('changepic',views.update_pic,name='update-pic'),
+    #path('changepic',views.index,name='update-pic'),
     #path('password', views.changePassword, name='changePassword'),
 ]
