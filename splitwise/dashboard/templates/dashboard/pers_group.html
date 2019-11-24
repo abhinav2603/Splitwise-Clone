@@ -2,7 +2,8 @@
 
 {% block title %}{{ user.user_name }}{% endblock %}
 
-{% block brand %} {{ user.user_name }} Groups {% endblock %}
+{% block brand %} 
+	<img src ="{{ user.dp.url }}" class="rounded-circle" alt="Cinque Terre"width=50 height=50> {{ user.user_name }}{% endblock %}
 
 {% block Groupsactive %}active{% endblock %}
 

@@ -4,9 +4,15 @@ from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm
-from .forms import ProfileForm
+
+from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm, UpdatedpForm, UploadFileForm
 import logging
+
+from .forms import RegisterForm
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
 def index(request):
@@ -16,15 +22,16 @@ def index(request):
 		return redirect("dashboard:login");
 
 def register(request):
-	form = UserCreationForm(request.POST or None)
+	form = RegisterForm(request.POST or None)
 	if request.method == "POST":
 		#form = UserCreationForm(request.POST)
 		if form.is_valid():
 			user = form.save()
-			username = form.cleaned_data.get('username')
+			username = form.cleaned_data.get('first_name')
+			email = form.cleaned_data.get('email')
 			login(request,user)
 			messages.success(request, f"New account created: {username}")
-			newUser=myUser(user_name=username)
+			newUser=myUser(user_name=username,email=email)
 			newUser.save()
 			zeroGrp=myGroup.objects.get(group_id=0)
 			zeroGrp.users.add(newUser)
@@ -64,7 +71,7 @@ def personal_page(request):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	nonfriend=myUser.objects.exclude(friends__in=[user])
-	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend});
+	return render(request,'dashboard/personal_page.html',{'user':user,'nonfriend':nonfriend});
 
 def friend_page(request,friend_id):
 	user_id=request.user.id
@@ -115,5 +122,47 @@ def addfriend(request,name):
 	user=get_object_or_404(myUser, pk=user_id)
 	frnd=get_object_or_404(myUser, user_name=name)
 	user.friends.add(frnd)
-	return redirect('dashboard:dashboard');
+	return redirect('dashboard:dashboard')
+
+def userprofile(request):
+	user_id = request.user.id
+	user = get_object_or_404(myUser, pk=user_id)
+	return render(request,'dashboard/profile.html',{'user':user})
+
+
+def update_pic(request):
+	user_id = request.user.id
+	user = get_object_or_404(myUser, pk=user_id)
+	if request.method=="POST":
+		form = UploadFileForm(request.POST, request.FILES)
+		if form.is_valid():
+			#form.save()
+			user.dp=request.FILES['file']
+			#user.dp=form.cleaned_data.get('dp')
+			user.save()
+			#a=form.cleaned_data.get('user_name')
+			a=request.FILES['file']
+			messages.info(request, f"You are in as {a}")
+			return redirect('dashboard:index')
+	else:
+		form=UpdatedpForm()
+	return render(request,'dashboard/changeMydp.html',{'user':user,'form':form});
+
+@login_required(login_url='dashboard/dashboard')
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('dashboard:login')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'dashboard/change_password.html', {
+        'form': form
+    })
+
 	

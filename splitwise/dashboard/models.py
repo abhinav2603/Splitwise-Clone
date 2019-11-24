@@ -8,7 +8,9 @@ from django.forms import ModelForm
 # Create your models here.
 class User(models.Model):
 	user_name=models.CharField(max_length=50)
+	email=models.EmailField(max_length=50, blank = True)
 	friends = models.ManyToManyField("self",blank=True)
+	dp=models.ImageField(upload_to='profile_pic')#,default='profile_pic/default.png')
 	def __str__(self):
 		return self.user_name
 #class Friends(models.Model):
@@ -23,21 +25,6 @@ class Profile(models.Model):
 	image = models.ImageField(max_length=100,blank=True)
 	location = models.CharField(max_length=30, blank=True)
 	#birth_date = models.DateField(null=True, blank=True)
-
-#@receiver(post_save, sender=User)
-#def create_user_profile(sender, instance, created, **kwargs):#
-#if created:
-#	Profile.objects.create(user=instance)
-
-#@receiver(post_save, sender=User)
-#def save_user_profile(sender, instance, **kwargs):
-#    instance.profile.save()
-
-#@receiver(post_save, sender=User)
-#def update_user_profile(sender, instance, created, **kwargs):
-#    if created:
-#        Profile.objects.create(user=instance)
- #   instance.profile.save()
 
 class Group(models.Model):
 	group_name=models.CharField(max_length=20)
@@ -65,6 +52,7 @@ class TransactionDetail(models.Model):
 		unique_together=(('trans','creditor','debitor'),)
 
 
+
 class NewGroupForm(forms.ModelForm):
 	def __init__(self,*args,**kwargs): # initializing your form in other words loading it
 		user_id=kwargs.pop('user_id')
@@ -75,11 +63,11 @@ class NewGroupForm(forms.ModelForm):
 		model=Group
 		fields = ['group_name', 'users']
 
+class UpdatedpForm(forms.Form):
+	file=forms.FileField()
+	#class Meta:
+	#	model=User
+	#	fields=['dp']
 
-
-
-
-
-
-
-
+class UploadFileForm(forms.Form):
+    file = forms.ImageField()

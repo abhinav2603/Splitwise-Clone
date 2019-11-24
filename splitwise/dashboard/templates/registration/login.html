@@ -1,44 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Register</title>
+  <title>Login</title>
   <!--for bootstrap -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <!---->
-
-
-  <style type="text/css">
-  	ul.errorlist{display: none;}
-  </style>
 </head>
 <body style="margin-top: 5%;">
 	<div class="container container-table">
 	    <form method="POST">
-		{% csrf_token %}
-		{{form.as_p}}
-	    <button style="background-color:#F4EB16; color:blue" class="btn btn-outline-info" type="submit">Sign Up</button>
-		</form>
-		If you already have an account <a href="/login" target="blank"><strong>login</strong></a> instead.
+	    {% csrf_token %}
+	    {{form.as_p}}
+	        <button style="background-color:#F4EB16; color:blue" class="btn btn-outline-info" type="submit">Login</button>
+	    </form>
+	    Don't have an account? <a href="/register" target="blank"><strong>register here</strong></a>!
 	</div>
 
-
-	{% if form.errors %}
-	    {% for field in form %}
-	        {% for error in field.errors %}
-	            <div class="alert alert-danger alert-dismissible">
-	                {{ error|escape }}<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-	            </div>
-	        {% endfor %}
-	    {% endfor %}
-	    {% for error in form.non_field_errors %}
-	        <div class="alert alert-danger alert-dismissible">
-	            {{ error|escape }}<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-	        </div>
-	    {% endfor %}
+	{% if messages %}
+		{% for message in messages %}
+		{% if message.tags == "error" %}
+		<div class="alert alert-danger alert-dismissible">
+			{{ message }} <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+		</div>
+		{% endif %}
+		{% endfor %}
 	{% endif %}
-
 
 	<!--for bootstrap -->
 	  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
