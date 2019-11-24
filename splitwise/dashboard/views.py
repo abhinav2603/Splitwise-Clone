@@ -124,7 +124,7 @@ def personal_page(request):
 				transFormType=3
 				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 
-	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm});
+	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm,"trType":transFormType});
 
 
 def handleTransaction(request,trForm):
