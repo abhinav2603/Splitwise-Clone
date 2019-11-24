@@ -18,9 +18,12 @@ urlpatterns = [
     path('addfriend/<str:name>',views.addfriend,name='fadd'),
     path('settings',views.userprofile,name='user_profile'),
     path('changepic',views.update_pic,name='update-pic'),
-    #path('accounts/', include('django.contrib.auth.urls')),
-    #path('change-password/', auth_views.PasswordChangeView.as_view(success_url=reverse_lazy('account:password_change_done')),name='change_password'),
+    path('settleup/<int:friend_id>',views.settleUp,name='settleup'),
+    path('remove/<int:group_id>',views.delete,name="delete"),
+    path('leave/<int:group_id>',views.leave,name='leave'),
     path('password', views.change_password, name='changePassword'),
     path('insights', views.insights, name='insights'),
     path('pdf_view', views.pdf_view, name='pdf_view')
+    path('balance/<int:group_id>',views.balance,name='balance'),
+    path('activity',views.activity,name='activity')
 ]

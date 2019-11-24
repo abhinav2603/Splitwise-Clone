@@ -1,0 +1,42 @@
+{% extends 'dashboard/header.html' %}
+
+{% block title %}{{ group.group_name }}{% endblock %}
+
+{% block brand %}{{ user.user_name }} in {{ group.group_name }} {% endblock %}
+
+{% block Groupsactive %}active{% endblock %}
+
+
+{% block content %}
+
+<ul>
+    <li>{{user.user_name}}<br>
+        <ul>
+            {%for k,v in mydict1.items%}
+                {%if v.0 > 0 %}
+                    <li>You owe Rs.{{v.0}} to {{k.user_name}}</li>
+                {%elif v.0 == 0%}
+                    <li>{{k.user_name}} is settled up</li>
+                {%else%}
+                    <li>{{k.user_name}} owes you Rs.{{v.1}}</li>
+                {%endif%}
+            {%endfor%}
+        </ul>
+    </li>
+
+    {%for k,v in mydict2.items %}
+        {%if k != user %}
+            {%if v.0 > 0%}
+                <li>{{k.user_name}} owes Rs.{{v.0}} to {{group.group_name}}</li>
+            {%elif v.0 == 0%}
+                <li>{{k.user_name}} is settled up</li>
+            {%else%}
+                <li>{{group.group_name}} owes Rs.{{v.1}} to {{k.user_name}}</li>
+            {%endif%}
+        {%endif%}
+    {%endfor%}
+</ul>
+
+
+
+{% endblock %}

@@ -8,19 +8,51 @@
 
 
 {% block content %}
+
+<a data-toggle="modal" data-target="#groupSettleModal">
+	<button class="btn btn-secondary float-left ml-5">SettleUp</button>
+</a>
+<a href="{%url 'dashboard:balance' group.group_id%}">
+	<button class="btn btn-secondary float-right mr-5">Balances</button>
+</a>
+<br><br>
+
+<!-- Modal -->
+  <div class="modal fade" id="groupSettleModal" tabindex="-1" role="dialog" aria-labelledby="groupSettleModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="groupSettleModalTitle">Select people to settle up with</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form method="post">
+          <div class="modal-body" id="modifyFormBody">
+            {% csrf_token %}
+            {{ groupSettleForm.as_p }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button id="nxtbtn" type="submit" class="btn btn-primary" value="submit">Settle Up!</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
 <ul>
-	<p>{{ group.group_name }}</p>
-		{% for transaction in transactions %}
-		<li>{{ transaction.title }}</li>
-		<ul>
-			{% for transdet in transaction.transactiondetail_set.all %}
-			{% if transdet.group.group_id != 0 %}
-			<li>{{ transdet.user.user_name }} lent {{ transdet.lent }} rupees in the group {{ transaction.group.group_name }}</li>
-			{% else %}
-			<li>{{ transdet.user.user_name }} lent {{ transdet.lent }} rupees outside any group</li>
-			{% endif %}
-			{% endfor %}
-		</ul>
+	{% for k,v in mydict.items%}
+		<li>{{k.trans.title}}<br>
+			{%if user == v.2%}
+				you owe Rs.{{v.0}} to {{v.3}}
+			{%elif user == v.3%}
+				{{v.2}} owes you Rs.{{v.0}} to you
+			{%else%}
+				{{v.2}} owes Rs.{{v.0}} to {{v.3}}
+			{%endif%}
+		</li>
 	{%endfor%}
-</ul>	
+</ul>
 {% endblock %}

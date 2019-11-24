@@ -3,17 +3,115 @@
 {% block title %}{{ user.user_name }}{% endblock %}
 
 {% block brand %} 
-	<img src ="{{ user.dp.url }}" class="rounded-circle" alt="Cinque Terre"width=50 height=50> {{ user.user_name }}{% endblock %}
+	<img src ="{{ user.dp.url }}" class="rounded-circle" alt=""width=50 height=50> {{ user.user_name }}{% endblock %}
 
 {% block Groupsactive %}active{% endblock %}
 
 
 {% block content %}
-<ul>
-	{% for group in user.group_set.all %}
-		{% if group.group_id != 0 %}
-			<li><a href="{% url 'dashboard:group' group.group_id %}"> {{ group.group_name }} </a></li>
-		{%endif%}
-	{%endfor%}
-</ul>
+
+	<div class="container">
+		<div class="card">
+			{%for key,value in mydict.items%}
+				{%if key.group_name != 'None'%}
+					<div class="card-body">
+						{%if value.0 > 0%}
+							<p>You owe Rs.{{value.0}} to 
+								<a href="{% url 'dashboard:group' key.group_id %}">{{key.group_name}}</a>
+								<a href="{%url 'dashboard:delete' key.group_id %}">
+										<button class="btn btn-secondary float-right mr-1">Delete</button>
+								</a>
+								<a href="{%url 'dashboard:leave' key.group_id%}">
+										<button class="btn btn-secondary float-right mr-2">Leave</button>
+								</a>
+							</p>
+						{%elif value.0 == 0%}
+							<p>
+								<a href="{% url 'dashboard:group' key.group_id %}">{{key.group_name}}</a>
+								doesn't owe you anything
+								<a href="{%url 'dashboard:delete' key.group_id %}">
+										<button class="btn btn-secondary float-right mr-1">Delete</button>
+								</a>
+								<a href="{%url 'dashboard:leave' key.group_id%}">
+										<button class="btn btn-secondary float-right mr-2">Leave</button>
+								</a>
+							</p>
+						{%else%}
+							<p>
+								<a href="{% url 'dashboard:group' key.group_id %}">{{key.group_name}}</a>
+								 owe you Rs. {{value.1}}
+								 <a href="{%url 'dashboard:delete' key.group_id %}">
+										<button class="btn btn-secondary float-right mr-1">Delete</button>
+								</a>
+								<a href="{%url 'dashboard:leave' key.group_id%}">
+										<button class="btn btn-secondary float-right mr-2">Leave</button>
+								</a>
+							</p>
+
+						{%endif%}
+					</div>
+				{%endif%}
+			{%endfor%}
+		</div>
+	</div>
+
+
+	<div class="container">
+		<div id="newGrp" style="margin-top:2%">
+		  <div class="card">
+			<div class="card-header">
+			  <a class="card-link" data-toggle="collapse" href="#grpForm">
+				Make new Group
+			  </a>
+			</div>
+			<div id="grpForm" class="collapse" data-parent="#newGrp" style="margin-top: 2%; margin-left: 2%;">
+			  <form method="post">
+			  	{% csrf_token %}
+				{{ form.as_p }}
+			    <button style="background-color:#F4EB16; color:blue" class="btn btn-outline-info" type="submit" value="submit">Done!</button>
+			</form>
+			</div>
+		</div>
+	</div>
+
+
+	
+
+	{% if form.errors %}
+      {% for field in form %}
+          {% for error in field.errors %}
+              <div class="alert alert-danger alert-dismissible">{{ field.name }}:{{ error|escape }}<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+              </div>
+          {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+          <div class="alert alert-danger alert-dismissible">
+              {{ error|escape }}<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          </div>
+      {% endfor %}
+  {% endif %}
+	<!--
+	<div class="container">
+		<div id="newGrp" style="margin-top:2%">
+		  <div class="card">
+			<div class="card-header">
+			  <a class="card-link" data-toggle="collapse" href="#collapseOne">
+				Make new Group
+			  </a>
+			</div>
+			<div id="friendList" class="collapse" data-parent="#newGrp">
+			  <div class="card-body"style="background-color: #eee;width: 200px;height: 100px;border: 1px dotted black;overflow: scroll;">
+					{% for friend in user.friends.all %}
+						{% if friend.user_name != "admin" %}
+							{% if user.user_name != friend.user_name %}
+								<p><a href="{% url 'dashboard:fadd' friend.user_name %}">{{friend}}</a></p>
+								<p>{{friend}}</p
+							{% endif %}
+						{% endif %}
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+-->
 {% endblock %}
