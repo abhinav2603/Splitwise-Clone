@@ -23,4 +23,5 @@ urlpatterns = [
     path('leave/<int:group_id>',views.leave,name='leave'),
     path('password', views.change_password, name='changePassword'),
     path('balance/<int:group_id>',views.balance,name='balance'),
+    path('activity',views.activity,name='activity')
 ]
