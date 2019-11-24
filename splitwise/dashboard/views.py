@@ -5,7 +5,7 @@ from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
 
-from .forms import ProfileForm, TransactionForm, TransactionDetailForm, TransactionParticipantsForm, RegisterForm
+from .forms import TransactionForm, TransactionDetailForm, TransactionParticipantsForm, RegisterForm
 
 
 from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm, UpdatedpForm, UploadFileForm

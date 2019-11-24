@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 
-from .models import Profile,Transaction,User,Group
+from .models import Profile,Transaction,User as myUser,Group
 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -26,7 +26,7 @@ class TransactionForm(forms.ModelForm):
 	def __init__(self,*args,**kwargs): # initializing your form in other words loading it
 		user_id=kwargs.pop('user_id')
 		super(TransactionForm, self).__init__(*args, **kwargs)
-		var = User.objects.get(pk=user_id)
+		var = myUser.objects.get(pk=user_id)
 		types=[ ('Movies','Movies'),('Food','Food'),('Housing','Housing'),('Travel','Travel'),('Others','Others')]
 		self.fields['group']=forms.ModelChoiceField(queryset=var.group_set.all())
 		#self.fields['participants']=forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple(), queryset=var.friends.all())
@@ -43,7 +43,7 @@ class TransactionParticipantsForm(forms.Form):
 	def __init__(self,*args,**kwargs):
 		user_id=kwargs.pop('user_id')
 		group_id=kwargs.pop('group_id')
-		user=User.objects.get(pk=user_id)
+		user=myUser.objects.get(pk=user_id)
 		group=Group.objects.get(group_id=group_id)
 		super(TransactionParticipantsForm, self).__init__(*args, **kwargs)
 		if group==Group.objects.get(group_id=0):
