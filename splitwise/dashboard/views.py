@@ -513,7 +513,7 @@ def my_group(request):
 	dtuple=dict()
 	for k,v in d.items():
 		dtuple[k]=(v,-v)
-	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple});
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form});
 
 def addfriend(request,name):
 	user_id=request.user.id
