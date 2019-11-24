@@ -86,5 +86,24 @@ class TransactionDetailForm(forms.Form):
 		return form_data
 
 
+class ModifyTransactionForm(forms.Form):
+	title=forms.CharField(label='Enter a new title, or leave empty',max_length=140,required=False)
+	types=[ ('Movies','Movies'),('Food','Food'),('Housing','Housing'),('Travel','Travel'),('Others','Others')]
+	tag=forms.ChoiceField(choices=types)
+	comment=forms.CharField(label='Add a comment',max_length=150,required=False)
+	transaction=forms.IntegerField(required=False,widget=forms.HiddenInput())
+	#def __init__(self,*args,**kwargs):
+	#	trans_id=kwargs.pop('trans_id')
+	#	trans=Transaction.objects.get(pk=trans_id)
+	#	super(TransactionDetailForm, self).__init__(*args, **kwargs)
+	#	self.fields['transaction']=
+
+class GroupSettleForm(forms.Form):
+	def __init__(self,*args,**kwargs):
+		group_id=kwargs.pop('group_id')
+		user_id=kwargs.pop('user_id')
+		group=Group.objects.get(group_id=group_id)
+		super(GroupSettleForm, self).__init__(*args, **kwargs)
+		self.fields['users']=forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple(),queryset=group.users.exclude(pk=user_id))
 
 

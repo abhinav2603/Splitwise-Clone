@@ -4,8 +4,9 @@ from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.db.models import Q
 
-from .forms import TransactionForm, TransactionDetailForm, TransactionParticipantsForm, RegisterForm
+from .forms import TransactionForm, TransactionDetailForm, TransactionParticipantsForm, RegisterForm, ModifyTransactionForm, GroupSettleForm
 
 
 from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm, UpdatedpForm, UploadFileForm
@@ -326,9 +327,9 @@ def settleUp(request,friend_id):
 				credit=transdet.creditor
 				debit=transdet.debitor
 				lent=transdet.lent
-				if credit == user & debitor == friend:
+				if (credit == user) & (debit == friend):
 					d[group]=d[group]+lent
-				elif debit==user & creditor == friend:
+				elif (debit==user) & (credit == friend):
 					d[group]=d[group]-lent
 
 	for k,v in d.items():
@@ -372,42 +373,78 @@ def group_page(request,group_id):
 	group = get_object_or_404(myGroup,group_id=group_id)
 	transactions=group.transaction_set.all()
 	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	settleForm=GroupSettleForm(group_id=group_id,user_id=user_id)
 	if request.method=="POST":
 		logging.debug('post request')
-		if transFormType==1:
-			logging.debug('formType=1')
-			trForm=TransactionForm(request.POST, user_id=user_id)
-			if trForm.is_valid():
-				title,trans_type,date,group=handleTransaction(request,trForm)
-				transFormType=2
-				logging.debug('first form submitted')
-				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+		if 'submit' not in request.POST:
+			logging.debug('submit post request')
+			settleForm=GroupSettleForm(request.POST,group_id=group_id,user_id=user_id)
+			if settleForm.is_valid():
+				messages.info(request,f'yes it works')
+				settleUsers=settleForm.cleaned_data.get('users')
+				for friend in settleUsers:
+					messages.info(request,f'{friend} by {friend}')
+					l=0
+					for transactions in group.transaction_set.all():
+						for transdet in transactions.transactiondetail_set.all():
+							if (user == transdet.creditor) & (friend == transdet.debitor):
+								l=l+transdet.lent 
+							elif (user == transdet.debitor) & (friend == transdet.creditor):
+								l=l-transdet.lent	
+					if l > 0:
+						newtrans=Transaction(group=group,title='Settled Up',trans_type='SettleUp',date=today)
+						newtrans.save()
+						newtrans.participants.add(user)
+						newtrans.participants.add(friend)
+						newtrans.save()
+						newtransdet=TransactionDetail(trans=newtrans,creditor=friend,debitor=user,lent=l)
+						newtransdet.save()
+					elif l < 0:
+						newtrans=Transaction(group=group,title='Settled Up',trans_type='SettleUp',date=today)
+						newtrans.save()
+						newtrans.participants.add(user)
+						newtrans.participants.add(friend)
+						newtrans.save()
+						newtransdet=TransactionDetail(trans=newtrans,creditor=user,debitor=friend,lent=(-1*l))
+						newtransdet.save()
+
 			else:
-				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
-			
-		elif transFormType==2:
-			logging.debug('formType=2')
-			trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
-			logging.debug('submitted the second form')
-			#breakpoint()
-			#import pdb; pdb.set_trace()
-			if trForm.is_valid():
-				logging.debug('second form valid')
-				participants_list=handleTransactionParticipants(request,trForm)
-				transFormType=3
-				logging.debug('Here')
-				transactionForm=TransactionDetailForm(participants_list=participants_list)
-			else:
-				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+				settleForm=GroupSettleForm(group_id=group_id,user_id=user_id)
 		else:
-			logging.debug('formType=3')
-			trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
-			if trForm.is_valid():
-				handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
-				transFormType=1
-				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+			if transFormType==1:
+				logging.debug('formType=1')
+				trForm=TransactionForm(request.POST, user_id=user_id)
+				if trForm.is_valid():
+					title,trans_type,date,group=handleTransaction(request,trForm)
+					transFormType=2
+					logging.debug('first form submitted')
+					transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+				else:
+					transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+				
+			elif transFormType==2:
+				logging.debug('formType=2')
+				trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
+				logging.debug('submitted the second form')
+				#breakpoint()
+				#import pdb; pdb.set_trace()
+				if trForm.is_valid():
+					logging.debug('second form valid')
+					participants_list=handleTransactionParticipants(request,trForm)
+					transFormType=3
+					logging.debug('Here')
+					transactionForm=TransactionDetailForm(participants_list=participants_list)
+				else:
+					transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
 			else:
-				transactionForm=TransactionDetailForm(participants_list=participants_list)
+				logging.debug('formType=3')
+				trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
+				if trForm.is_valid():
+					handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
+					transFormType=1
+					transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+				else:
+					transactionForm=TransactionDetailForm(participants_list=participants_list)
 
 	dtuple=dict()
 	for transactions in group.transaction_set.all():
@@ -420,7 +457,7 @@ def group_page(request,group_id):
 			messages.info(request,f'{lent}')
 			dtuple[transdet]=(lent,-lent,credit,debit)
 
-	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple})
+	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,'groupSettleForm':settleForm})
 
 ##########################################################################################
 
@@ -796,5 +833,79 @@ def change_password(request):
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'dashboard/change_password.html', {
-        'form': form
-    })
+        'form': form})
+
+	
+def activity(request):
+	user_id=request.user.id
+	user=myUser.objects.get(pk=user_id)
+	transactions=Transaction.objects.filter(participants__in=[user]).order_by('-date')
+	modifyForm=ModifyTransactionForm()
+	global transFormType
+	global participants_list
+	global title
+	global trans_type
+	global date
+	global group
+	global transaction
+	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	if request.method=="POST":
+		logging.debug('post request')
+		if 'submit' in request.POST:
+			logging.debug('post request for modify')
+			modifyForm=ModifyTransactionForm(request.POST)
+			if modifyForm.is_valid():
+				logging.debug('Modify form is valid')
+				transaction=Transaction.objects.get(pk=int(modifyForm.cleaned_data.get('transaction')))
+				newTitle=modifyForm.cleaned_data.get('title')
+				newType=modifyForm.cleaned_data.get('tag')
+				logging.debug('new tag: '+newType)
+				newComment=modifyForm.cleaned_data.get('comment')
+				logging.debug("entered title is: "+newTitle)
+				if newTitle!="":
+					transaction.title=newTitle
+				transaction.trans_type=newType
+				if newComment!="":
+					newComment=user.user_name+":\n"+newComment
+					oldComm=transaction.comments
+					transaction.comments=oldComm+newComment
+				transaction.save()
+			else:
+				modifyForm=ModifyTransactionForm()
+		else:
+			if transFormType==1:
+				logging.debug('formType=1')
+				trForm=TransactionForm(request.POST, user_id=user_id)
+				if trForm.is_valid():
+					title,trans_type,date,group=handleTransaction(request,trForm)
+					transFormType=2
+					logging.debug('first form submitted')
+					transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+				else:
+					transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+				
+			elif transFormType==2:
+				logging.debug('formType=2')
+				trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
+				logging.debug('submitted the second form')
+				#breakpoint()
+				#import pdb; pdb.set_trace()
+				if trForm.is_valid():
+					logging.debug('second form valid')
+					participants_list=handleTransactionParticipants(request,trForm)
+					transFormType=3
+					logging.debug('Here')
+					transactionForm=TransactionDetailForm(participants_list=participants_list)
+				else:
+					transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+			else:
+				logging.debug('formType=3')
+				trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
+				if trForm.is_valid():
+					handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
+					transFormType=1
+					transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+				else:
+					transactionForm=TransactionDetailForm(participants_list=participants_list)
+
+	return render(request, 'dashboard/activity_page.html',{'user':user,'transactions':transactions, 'modifyForm':modifyForm,"transForm":transactionForm,"trType":transFormType})
