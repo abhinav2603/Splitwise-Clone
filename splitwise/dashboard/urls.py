@@ -19,7 +19,7 @@ urlpatterns = [
     path('settings',views.userprofile,name='user_profile'),
     path('changepic',views.update_pic,name='update-pic'),
     path('settleup/<int:friend_id>',views.settleUp,name='settleup'),
-    #path('accounts/', include('django.contrib.auth.urls')),
-    #path('change-password/', auth_views.PasswordChangeView.as_view(success_url=reverse_lazy('account:password_change_done')),name='change_password'),
+    path('remove/<int:group_id>',views.delete,name="delete"),
+    path('leave/<int:group_id>',views.leave,name='leave'),
     path('password', views.change_password, name='changePassword'),
 ]

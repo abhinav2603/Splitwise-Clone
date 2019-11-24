@@ -85,6 +85,8 @@ def login_request(request):
 		template_name = "dashboard/login.html",
 		context={"form":form})
 
+#############################################################################################3
+
 def personal_page(request):
 	#import pdb; pdb.set_trace()
 	global transFormType
@@ -121,13 +123,6 @@ def personal_page(request):
 	dtuple=dict()
 	for k,v in d.items():
 		dtuple[k]=(v,-v)
-	#formType=1
-	#participants_list=[]
-	#title="the transaction"
-	#trans_type="Others"
-	#date=None
-	#group=None
-	#transaction=None
 	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 	if request.method=="POST":
 		logging.debug('post request')
@@ -168,6 +163,7 @@ def personal_page(request):
 
 	return render(request,'dashboard/personal_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple});
 
+###############################################################################
 
 def handleTransaction(request,trForm):
 	user_id=request.user.id
@@ -230,6 +226,7 @@ def handleTransactionDetail(request,trForm,title,trans_type,date,group,participa
 				gave_extra.sort(key=lambda tup:tup[1],reverse=True)
 				gave_less.sort(key=lambda tup:tup[1], reverse=True)		
 
+##################################################################################
 
 def friend_page(request,friend_id):
 	user_id=request.user.id
@@ -312,6 +309,8 @@ def friend_page(request,friend_id):
 		'mydict':dtuple,
 		'state':state})
 
+###################################################################################3
+
 def settleUp(request,friend_id):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
@@ -327,9 +326,9 @@ def settleUp(request,friend_id):
 				credit=transdet.creditor
 				debit=transdet.debitor
 				lent=transdet.lent
-				if credit == user:
+				if credit == user & debitor == friend:
 					d[group]=d[group]+lent
-				elif debit==user:
+				elif debit==user & creditor == friend:
 					d[group]=d[group]-lent
 
 	for k,v in d.items():
@@ -357,6 +356,8 @@ def settleUp(request,friend_id):
 		'transactions':transactions,
 		'mydict':d,
 		'state':state})
+
+################################################################################
 
 def group_page(request,group_id):
 	global transFormType
@@ -408,9 +409,29 @@ def group_page(request,group_id):
 			else:
 				transactionForm=TransactionDetailForm(participants_list=participants_list)
 
-	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType, 'transactions':transactions});
+		group1=myGroup.objects.filter(users__in=[user])
+		d=dict()
+		for group in group1:
+			for transactions in group.transaction_set.all():
+				for transdet in transactions.transactiondetail_set.all():
+					credit=transdet.creditor
+					debit=transdet.debitor
+					lent=transdet.lent
+					if credit == user:
+						d[group]=d[group]+lent
+					elif debit==user:
+						d[group]=d[group]-lent
+		dtuple=dict()
+		for k,v in d.items():
+			dtuple[k]=(v,-v)
+
+	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType, 'transactions':transactions,'mydict':dtuple});
+
+##########################################################################################
 
 def my_group(request):
+	user_id = request.user.id
+	user = get_object_or_404(myUser, pk=user_id)
 	global transFormType
 	global participants_list
 	global title
@@ -418,8 +439,6 @@ def my_group(request):
 	global date
 	global group
 	global transaction
-	user_id = request.user.id
-	user = get_object_or_404(myUser, pk=user_id)
 	#logger = logging.getLogger(__name__)
 	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 	form=NewGroupForm(user_id=request.user.id)
@@ -477,7 +496,24 @@ def my_group(request):
 				else:
 					transactionForm=TransactionDetailForm(participants_list=participants_list)
 
-	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'form':form});
+	group1=myGroup.objects.filter(users__in=[user])
+	d=dict()
+	for group in group1:
+		d[group]=0
+	for group in group1:
+		for transactions in group.transaction_set.all():
+			for transdet in transactions.transactiondetail_set.all():
+				credit=transdet.creditor
+				debit=transdet.debitor
+				lent=transdet.lent
+				if credit == user:
+					d[group]=d[group]+lent
+				elif debit==user:
+					d[group]=d[group]-lent
+	dtuple=dict()
+	for k,v in d.items():
+		dtuple[k]=(v,-v)
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple});
 
 def addfriend(request,name):
 	user_id=request.user.id
@@ -486,6 +522,7 @@ def addfriend(request,name):
 	user.friends.add(frnd)
 	return redirect('dashboard:dashboard')
 
+################################--------USER PRofile###########################################3
 def userprofile(request):
 	user_id = request.user.id
 	user = get_object_or_404(myUser, pk=user_id)
@@ -535,6 +572,152 @@ def userprofile(request):
 				transactionForm=TransactionDetailForm(participants_list=participants_list)
 	return render(request,'dashboard/profile.html',{'user':user, "transForm":transactionForm,"trType":transFormType})
 
+##################################3--------------LEAVE GROUP--------------------------##########################
+
+def leave(request,group_id):
+	user_id = request.user.id
+	user = get_object_or_404(myUser, pk=user_id)
+	group2=get_object_or_404(myGroup,group_id=group_id)
+	messages.info(request,group2.group_id)
+	messages.info(request,group_id)
+	sum=0
+	for trans in group2.transaction_set.all():
+		messages.info(request,trans)
+		for transdet in trans.transactiondetail_set.all():
+			if user == transdet.creditor:
+				sum=sum+transdet.lent
+			elif user == transdet.debitor:
+				sum=sum-transdet.lent
+	if sum == 0:
+		group2.users.remove(user)
+		group2.save()
+	else:
+		messages.error(request, group_id)
+	global transFormType
+	global participants_list
+	global title
+	global trans_type
+	global date
+	global group
+	global transaction
+	#logger = logging.getLogger(__name__)
+	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	form=NewGroupForm(user_id=request.user.id)
+	if request.method=="POST":
+		logging.debug('post request')
+		if 'submit' in request.POST:
+			form=NewGroupForm(request.POST,user_id=request.user.id)
+			if form.is_valid():
+				group_name=form.cleaned_data.get('group_name')
+				participants=form.cleaned_data.get('users')
+				group_id=myGroup.objects.all().count()
+				#logger.error(group_name)
+				newGrp=myGroup(group_name=group_name,group_id=group_id)
+				newGrp.save()
+				newGrp.users.add(user)
+				for part in participants:
+					newGrp.users.add(part)
+				newGrp.save()
+				return redirect("dashboard:all_groups")
+			else:
+				form=NewGroupForm(user_id=request.user.id)
+		else:
+			if transFormType==1:
+				logging.debug('formType=1')
+				trForm=TransactionForm(request.POST, user_id=user_id)
+				if trForm.is_valid():
+					title,trans_type,date,group=handleTransaction(request,trForm)
+					transFormType=2
+					logging.debug('first form submitted')
+					transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+				else:
+					transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+				
+			elif transFormType==2:
+				logging.debug('formType=2')
+				trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
+				logging.debug('submitted the second form')
+				#breakpoint()
+				#import pdb; pdb.set_trace()
+				if trForm.is_valid():
+					logging.debug('second form valid')
+					participants_list=handleTransactionParticipants(request,trForm)
+					transFormType=3
+					logging.debug('Here')
+					transactionForm=TransactionDetailForm(participants_list=participants_list)
+				else:
+					transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+			else:
+				logging.debug('formType=3')
+				trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
+				if trForm.is_valid():
+					handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
+					transFormType=1
+					transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+				else:
+					transactionForm=TransactionDetailForm(participants_list=participants_list)
+
+	group1=myGroup.objects.filter(users__in=[user])
+	d=dict()
+	for group in group1:
+		d[group]=0
+	for group in group1:
+		for transactions in group.transaction_set.all():
+			for transdet in transactions.transactiondetail_set.all():
+				credit=transdet.creditor
+				debit=transdet.debitor
+				lent=transdet.lent
+				if credit == user:
+					d[group]=d[group]+lent
+				elif debit==user:
+					d[group]=d[group]-lent
+	dtuple=dict()
+	for k,v in d.items():
+		dtuple[k]=(v,-v)
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple});
+
+############################-----------DELETE GROUP---------########################################3
+
+def delete(request,group_id):
+	state='settled'
+	user_id=request.user.id
+	user=get_object_or_404(myUser,pk=user_id)
+	group2=get_object_or_404(myGroup,group_id=group_id)
+	s=dict()
+	for user in group2.users.all():
+		s[user]=0
+	for transactions in group2.transaction_set.all():
+		for trans in transactions.transactiondetail_set.all():
+			s[trans.creditor]=s[trans.creditor]+trans.lent
+			s[trans.debitor]=s[trans.debitor]-trans.lent
+	for k,v in s.items():
+		if v != 0:
+			state='unsettled'
+			break
+	if state == 'unsettled':
+		messages.error(request,f'Not everyone is settled in the group!!')
+	else:
+		grp=myGroup.objects.get(group_id=group_id)
+		grp.delete()
+
+	group1=myGroup.objects.filter(users__in=[user])
+	d=dict()
+	for group in group1:
+		d[group]=0
+	for group in group1:
+		for transactions in group.transaction_set.all():
+			for transdet in transactions.transactiondetail_set.all():
+				credit=transdet.creditor
+				debit=transdet.debitor
+				lent=transdet.lent
+				if credit == user:
+					d[group]=d[group]+lent
+				elif debit==user:
+					d[group]=d[group]-lent
+	dtuple=dict()
+	for k,v in d.items():
+		dtuple[k]=(v,-v)
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group,'mydict':dtuple});
 
 def update_pic(request):
 	user_id = request.user.id
