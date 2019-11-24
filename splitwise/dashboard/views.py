@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm,  AuthenticationForm
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from .forms import TransactionForm, TransactionDetailForm, TransactionParticipantsForm, RegisterForm
 
@@ -572,3 +573,9 @@ def change_password(request):
     })
 
 	
+def activity(request):
+	user_id=request.user.id
+	user=myUser.objects.get(pk=user_id)
+	transactions=Transaction.objects.filter(participants__in=[user]).order_by('-date')
+
+	return render(request, 'dashboard/activity_page.html',{'user':user,'transactions':transactions})
