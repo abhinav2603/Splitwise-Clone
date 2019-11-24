@@ -1,11 +1,16 @@
 from django import forms
 from django.forms import ModelForm
+
 from .models import Profile,Transaction,User,Group
 
-class ProfileForm(forms.ModelForm):
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
+
+class RegisterForm(UserCreationForm):
     class Meta:
-        model = Profile
-        fields = ('bio'),('location'),'image',
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', )
 
 
 class DateInput(forms.DateInput):
