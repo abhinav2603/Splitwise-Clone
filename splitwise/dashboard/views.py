@@ -5,10 +5,22 @@ from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm
-from .forms import ProfileForm, TransactionForm, TransactionDetailForm
+from .forms import ProfileForm, TransactionForm, TransactionDetailForm, TransactionParticipantsForm
 import logging
 import datetime
+import pdb
 
+
+LOG_FILENAME = 'views.log'
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+
+transFormType=1
+participants_list=[]
+title="the transaction"
+trans_type="Others"
+date=None
+group=None
+transaction=None
 # Create your views here.
 def index(request):
 	if request.user.is_authenticated:
@@ -62,76 +74,114 @@ def login_request(request):
 		context={"form":form})
 
 def personal_page(request):
+	#import pdb; pdb.set_trace()
+	global transFormType
+	global participants_list
+	global title
+	global trans_type
+	global date
+	global group
+	global transaction
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	nonfriend=myUser.objects.exclude(friends__in=[user])
-	formType=1
-	participants_list=[]
-	transaction=None
+	#formType=1
+	#participants_list=[]
+	#title="the transaction"
+	#trans_type="Others"
+	#date=None
+	#group=None
+	#transaction=None
 	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 	if request.method=="POST":
-		if formType==1:
+		logging.debug('post request')
+		if transFormType==1:
+			logging.debug('formType=1')
 			trForm=TransactionForm(request.POST, user_id=user_id)
 			if trForm.is_valid():
-				participants_list,transaction=handleTransaction(request)
-				formType=2
-				transactionForm=TransactionDetailForm(participants_list=participants_list)
+				title,trans_type,date,group=handleTransaction(request,trForm)
+				transFormType=2
+				logging.debug('first form submitted')
+				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
 			
+		elif transFormType==2:
+			logging.debug('formType=2')
+			trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
+			logging.debug('submitted the second form')
+			#breakpoint()
+			#import pdb; pdb.set_trace()
+			if trForm.is_valid():
+				logging.debug('second form valid')
+				participants_list=handleTransactionParticipants(request,trForm)
+				transFormType=3
+				logging.debug('Here')
+				transactionForm=TransactionDetailForm(participants_list=participants_list)
 		else:
+			logging.debug('formType=3')
 			trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
 			if trForm.is_valid():
-				handleTransactionDetail(request,participants_list,transaction)
-				formType=1
+				handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
+				transFormType=3
+				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 
 	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm});
 
 
-def handleTransaction(request):
+def handleTransaction(request,trForm):
 	user_id=request.user.id
-	trForm=TransactionForm(request.POST, user_id=user_id)
-	transaction=trForm.save()
-	title=trForm.cleaned_data.get('title')
-	trans_type=trForm.cleaned_data.get('trans_type')
-	date=trForm.cleaned_data.get('date')
-	group=trForm.cleaned_data.get('group')
-	participants=trForm.cleaned_data.get('participants')
-	newTransaction=Transaction(title=title,trans_type=trans_type,date=date,group=group)
-	#newTransaction.save()
-	participants_list=[]
-	for user in participants:
-		#newTransaction.participants.add(user)
-		participants_list.append(user)
-	#newTransaction.save()
-	participants_list.append(myUser.objects.get(pk=user_id))
-	return (participants_list,transaction)
+	#trForm=TransactionForm(request.POST, user_id=user_id)
+	#transaction=trForm.save()
+	newTransaction=None
+	if trForm.is_valid():
+		title=trForm.cleaned_data.get('title')
+		trans_type=trForm.cleaned_data.get('trans_type')
+		date=trForm.cleaned_data.get('date')
+		group=trForm.cleaned_data.get('group')
+	return (title,trans_type,date,group)
 
-def handleTransactionDetail(request,participants_list,transaction):
+def handleTransactionParticipants(request,trForm):
+	#trForm=TransactionParticipantsForm(request.POST,user=myUser.objects.get(request.user.id),group=group)
+	participants_list=[]
+	if trForm.is_valid():
+		part=trForm.cleaned_data.get('participants')
+		for participant in part:
+			participants_list.append(participant)
+		participants_list.append(myUser.objects.get(pk=request.user.id))
+	return participants_list
+
+def handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list):
 	user_id=request.user.id
-	trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
+	newTransaction=Transaction(title=title,trans_type=trans_type,date=date,group=group)
+	newTransaction.save()
+	for participant in participants_list:
+		newTransaction.participants.add(participant)
+	newTransaction.save()
+	#breakpoint()
+	#trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
 	if trForm.is_valid():
 		gave_extra=[]
 		gave_less=[]
 		for participant in participants_list:
 			given=trForm.cleaned_data.get(str(participant.id)+'gave')-trForm.cleaned_data.get(str(participant.id)+'share')
 			if given>0:
-				gave_extra.append[(participant,given)]
+				gave_extra.append([participant,given])
 			else:
-				gave_less.append[(participant,-given)]
+				gave_less.append([participant,-given])
 		gave_extra.sort(key=lambda tup:tup[1],reverse=True)
 		gave_less.sort(key=lambda tup:tup[1], reverse=True)
 
 		while len(gave_extra)!=0:
 			if gave_extra[0][1]>gave_less[0][1]:
-				newTransactionDetail=TransactionDetail(trans=transaction,creditor=gave_extra[0][0],debitor=gave_less[0][0],lent=gave_less[0][1])
+				newTransactionDetail=TransactionDetail(trans=newTransaction,creditor=gave_extra[0][0],debitor=gave_less[0][0],lent=gave_less[0][1])
 				newTransactionDetail.save()
-				gave_extra[0][1]=gave_extra[0][1]=gave_less[0][1]
+				gave_extra[0][1]=gave_extra[0][1]-gave_less[0][1]
 				del gave_less[0]
 				gave_extra.sort(key=lambda tup:tup[1],reverse=True)
 				gave_less.sort(key=lambda tup:tup[1], reverse=True)
 			else:
-				newTransactionDetail=TransactionDetail(trans=transaction,creditor=gave_extra[0][0],debitor=gave_less[0][0],lent=gave_extra[0][1])
+				newTransactionDetail=TransactionDetail(trans=newTransaction,creditor=gave_extra[0][0],debitor=gave_less[0][0],lent=gave_extra[0][1])
 				newTransactionDetail.save()
-				gave_less[0][1]=gave_less[0][1]=gave_extra[0][1]
+				gave_less[0][1]=gave_less[0][1]-gave_extra[0][1]
 				del gave_extra[0]
 				if gave_less[0][1]==0:
 					del gave_less[0]
