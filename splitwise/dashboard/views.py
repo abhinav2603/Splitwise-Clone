@@ -210,44 +210,175 @@ def friend_page(request,friend_id):
 	user=get_object_or_404(myUser, pk=user_id)
 	friend=get_object_or_404(myUser, pk=friend_id)
 	transactions=Transaction.objects.filter(participants__in=[user]).filter(participants__in=[friend])
+	global transFormType
+	global participants_list
+	global title
+	global trans_type
+	global date
+	global group
+	global transaction
+	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	if request.method=="POST":
+		logging.debug('post request')
+		if transFormType==1:
+			logging.debug('formType=1')
+			trForm=TransactionForm(request.POST, user_id=user_id)
+			if trForm.is_valid():
+				title,trans_type,date,group=handleTransaction(request,trForm)
+				transFormType=2
+				logging.debug('first form submitted')
+				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+			else:
+				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+			
+		elif transFormType==2:
+			logging.debug('formType=2')
+			trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
+			logging.debug('submitted the second form')
+			#breakpoint()
+			#import pdb; pdb.set_trace()
+			if trForm.is_valid():
+				logging.debug('second form valid')
+				participants_list=handleTransactionParticipants(request,trForm)
+				transFormType=3
+				logging.debug('Here')
+				transactionForm=TransactionDetailForm(participants_list=participants_list)
+			else:
+				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+		else:
+			logging.debug('formType=3')
+			trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
+			if trForm.is_valid():
+				handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
+				transFormType=1
+				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+			else:
+				transactionForm=TransactionDetailForm(participants_list=participants_list)
 	return render(request,'dashboard/friend_page.html',{
 		'user':user,
 		'friend':friend,
-		'transactions':transactions})
+		'transactions':transactions, "transForm":transactionForm,"trType":transFormType})
 
 def group_page(request,group_id):
+	global transFormType
+	global participants_list
+	global title
+	global trans_type
+	global date
+	global group
+	global transaction
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	group = get_object_or_404(myGroup,group_id=group_id)
 	transactions=group.transaction_set.all()
-	return render(request,'dashboard/group_page.html',{
-		'group':group,
-		'user':user,
-		'transactions':transactions,
-		});
+	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	if request.method=="POST":
+		logging.debug('post request')
+		if transFormType==1:
+			logging.debug('formType=1')
+			trForm=TransactionForm(request.POST, user_id=user_id)
+			if trForm.is_valid():
+				title,trans_type,date,group=handleTransaction(request,trForm)
+				transFormType=2
+				logging.debug('first form submitted')
+				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+			else:
+				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+			
+		elif transFormType==2:
+			logging.debug('formType=2')
+			trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
+			logging.debug('submitted the second form')
+			#breakpoint()
+			#import pdb; pdb.set_trace()
+			if trForm.is_valid():
+				logging.debug('second form valid')
+				participants_list=handleTransactionParticipants(request,trForm)
+				transFormType=3
+				logging.debug('Here')
+				transactionForm=TransactionDetailForm(participants_list=participants_list)
+			else:
+				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+		else:
+			logging.debug('formType=3')
+			trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
+			if trForm.is_valid():
+				handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
+				transFormType=1
+				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+			else:
+				transactionForm=TransactionDetailForm(participants_list=participants_list)
+
+	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType, 'transactions':transactions});
 
 def my_group(request):
+	global transFormType
+	global participants_list
+	global title
+	global trans_type
+	global date
+	global group
+	global transaction
 	user_id = request.user.id
 	user = get_object_or_404(myUser, pk=user_id)
 	#logger = logging.getLogger(__name__)
+	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	form=NewGroupForm(user_id=request.user.id)
 	if request.method=="POST":
-		form=NewGroupForm(request.POST,user_id=request.user.id)
-		if form.is_valid():
-			group_name=form.cleaned_data.get('group_name')
-			participants=form.cleaned_data.get('users')
-			group_id=myGroup.objects.all().count()
-			#logger.error(group_name)
-			newGrp=myGroup(group_name=group_name,group_id=group_id)
-			newGrp.save()
-			newGrp.users.add(user)
-			for part in participants:
-				newGrp.users.add(part)
-			newGrp.save()
-			return redirect("dashboard:all_groups")
-	else:
-		form=NewGroupForm(user_id=request.user.id)
+		logging.debug('post request')
+		if 'submit' in request.POST:
+			form=NewGroupForm(request.POST,user_id=request.user.id)
+			if form.is_valid():
+				group_name=form.cleaned_data.get('group_name')
+				participants=form.cleaned_data.get('users')
+				group_id=myGroup.objects.all().count()
+				#logger.error(group_name)
+				newGrp=myGroup(group_name=group_name,group_id=group_id)
+				newGrp.save()
+				newGrp.users.add(user)
+				for part in participants:
+					newGrp.users.add(part)
+				newGrp.save()
+				return redirect("dashboard:all_groups")
+			else:
+				form=NewGroupForm(user_id=request.user.id)
+		else:
+			if transFormType==1:
+				logging.debug('formType=1')
+				trForm=TransactionForm(request.POST, user_id=user_id)
+				if trForm.is_valid():
+					title,trans_type,date,group=handleTransaction(request,trForm)
+					transFormType=2
+					logging.debug('first form submitted')
+					transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+				else:
+					transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+				
+			elif transFormType==2:
+				logging.debug('formType=2')
+				trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
+				logging.debug('submitted the second form')
+				#breakpoint()
+				#import pdb; pdb.set_trace()
+				if trForm.is_valid():
+					logging.debug('second form valid')
+					participants_list=handleTransactionParticipants(request,trForm)
+					transFormType=3
+					logging.debug('Here')
+					transactionForm=TransactionDetailForm(participants_list=participants_list)
+				else:
+					transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+			else:
+				logging.debug('formType=3')
+				trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
+				if trForm.is_valid():
+					handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
+					transFormType=1
+					transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+				else:
+					transactionForm=TransactionDetailForm(participants_list=participants_list)
 
-	return render(request,'dashboard/pers_group.html',{'user':user,'form':form});
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'form':form});
 
 def addfriend(request,name):
 	user_id=request.user.id
@@ -259,7 +390,51 @@ def addfriend(request,name):
 def userprofile(request):
 	user_id = request.user.id
 	user = get_object_or_404(myUser, pk=user_id)
-	return render(request,'dashboard/profile.html',{'user':user})
+	global transFormType
+	global participants_list
+	global title
+	global trans_type
+	global date
+	global group
+	global transaction
+	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	if request.method=="POST":
+		logging.debug('post request')
+		if transFormType==1:
+			logging.debug('formType=1')
+			trForm=TransactionForm(request.POST, user_id=user_id)
+			if trForm.is_valid():
+				title,trans_type,date,group=handleTransaction(request,trForm)
+				transFormType=2
+				logging.debug('first form submitted')
+				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+			else:
+				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+			
+		elif transFormType==2:
+			logging.debug('formType=2')
+			trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
+			logging.debug('submitted the second form')
+			#breakpoint()
+			#import pdb; pdb.set_trace()
+			if trForm.is_valid():
+				logging.debug('second form valid')
+				participants_list=handleTransactionParticipants(request,trForm)
+				transFormType=3
+				logging.debug('Here')
+				transactionForm=TransactionDetailForm(participants_list=participants_list)
+			else:
+				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+		else:
+			logging.debug('formType=3')
+			trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
+			if trForm.is_valid():
+				handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
+				transFormType=1
+				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+			else:
+				transactionForm=TransactionDetailForm(participants_list=participants_list)
+	return render(request,'dashboard/profile.html',{'user':user, "transForm":transactionForm,"trType":transFormType})
 
 
 def update_pic(request):
