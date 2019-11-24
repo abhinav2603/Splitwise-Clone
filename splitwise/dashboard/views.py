@@ -409,23 +409,18 @@ def group_page(request,group_id):
 			else:
 				transactionForm=TransactionDetailForm(participants_list=participants_list)
 
-		group1=myGroup.objects.filter(users__in=[user])
-		d=dict()
-		for group in group1:
-			for transactions in group.transaction_set.all():
-				for transdet in transactions.transactiondetail_set.all():
-					credit=transdet.creditor
-					debit=transdet.debitor
-					lent=transdet.lent
-					if credit == user:
-						d[group]=d[group]+lent
-					elif debit==user:
-						d[group]=d[group]-lent
-		dtuple=dict()
-		for k,v in d.items():
-			dtuple[k]=(v,-v)
+	dtuple=dict()
+	for transactions in group.transaction_set.all():
+		for transdet in transactions.transactiondetail_set.all():
+			credit=transdet.creditor
+			debit=transdet.debitor
+			lent=transdet.lent
+			messages.info(request,f'{credit}')
+			messages.info(request,f'{debit}')
+			messages.info(request,f'{lent}')
+			dtuple[transdet]=(lent,-lent,credit,debit)
 
-	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType}) #, 'transactions':transactions,'mydict':dtuple});
+	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple})
 
 ##########################################################################################
 
@@ -674,7 +669,7 @@ def leave(request,group_id):
 	dtuple=dict()
 	for k,v in d.items():
 		dtuple[k]=(v,-v)
-	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple});
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form});
 
 ############################-----------DELETE GROUP---------########################################3
 
@@ -736,6 +731,56 @@ def update_pic(request):
 	else:
 		form=UpdatedpForm()
 	return render(request,'dashboard/changeMydp.html',{'user':user,'form':form});
+
+def balance(request,group_id):
+	user_id=request.user.id
+	user = get_object_or_404(myUser, pk=user_id)
+	group2=get_object_or_404(myGroup,group_id=group_id)
+	d1=dict()
+	d2=dict()
+	dtuple1=dict()
+	dtuple2=dict()
+	#for friend in group.users.filter(friend__in=[user]):
+	#for participants in group.user_set.all():
+	#	if 
+
+	for transactions in group2.transaction_set.all():
+		for transdet in transactions.transactiondetail_set.all():
+			credit=transdet.creditor
+			debit=transdet.debitor
+			lent=transdet.lent
+			if credit == user:
+				if debit in d1.keys():
+					d1[debit]=d1[debit]+lent
+				else:
+					d1[debit]=lent
+			elif debit == user:
+				if credit in d1.keys():
+					d1[credit]=d1[credit]-lent
+				else :
+					d1[credit]=(-1*lent)
+
+	for k,v in d1.items():
+		dtuple1[k]=(v,-v)
+	
+	for transactions in group2.transaction_set.all():
+		for transdet in transactions.transactiondetail_set.all():
+			credit=transdet.creditor
+			debit=transdet.debitor
+			lent=transdet.lent
+			if debit in d2.keys():
+				d2[debit]=d2[debit]-lent
+			else:
+				d2[debit]=-lent
+			if credit in d2.keys():
+				d2[credit]=d2[credit]+lent
+			else:
+				d2[credit]=lent
+	
+	for k,v in d2.items():
+		dtuple2[k]=(v,-v)
+
+	return render(request,'dashboard/balance.html',{'user':user,"group":group2,'mydict1':dtuple1,'mydict2':dtuple2})
 
 @login_required(login_url='dashboard/dashboard')
 def change_password(request):

@@ -22,4 +22,5 @@ urlpatterns = [
     path('remove/<int:group_id>',views.delete,name="delete"),
     path('leave/<int:group_id>',views.leave,name='leave'),
     path('password', views.change_password, name='changePassword'),
+    path('balance/<int:group_id>',views.balance,name='balance'),
 ]

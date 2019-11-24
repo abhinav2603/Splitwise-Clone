@@ -18,7 +18,7 @@
 						{%if value.0 > 0%}
 							<p>You owe Rs.{{value.0}} to 
 								<a href="{% url 'dashboard:group' key.group_id %}">{{key.group_name}}</a>
-								<a href="{%url 'dashboard:delete' key.group_id%}"></a>
+								<a href="{%url 'dashboard:delete' key.group_id %}">
 										<button class="btn btn-secondary float-right mr-1">Delete</button>
 								</a>
 								<a href="{%url 'dashboard:leave' key.group_id%}">
@@ -29,7 +29,7 @@
 							<p>
 								<a href="{% url 'dashboard:group' key.group_id %}">{{key.group_name}}</a>
 								doesn't owe you anything
-								<a href="{%url 'dashboard:delete' key.group_id%}"></a>
+								<a href="{%url 'dashboard:delete' key.group_id %}">
 										<button class="btn btn-secondary float-right mr-1">Delete</button>
 								</a>
 								<a href="{%url 'dashboard:leave' key.group_id%}">
@@ -40,7 +40,7 @@
 							<p>
 								<a href="{% url 'dashboard:group' key.group_id %}">{{key.group_name}}</a>
 								 owe you Rs. {{value.1}}
-								 <a href="{%url 'dashboard:delete' key.group_id%}">
+								 <a href="{%url 'dashboard:delete' key.group_id %}">
 										<button class="btn btn-secondary float-right mr-1">Delete</button>
 								</a>
 								<a href="{%url 'dashboard:leave' key.group_id%}">
