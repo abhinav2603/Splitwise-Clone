@@ -9,19 +9,34 @@
 
 
 {% block content %}
-	{{image}}
-	<ul>
-	{% for transaction in transactions %}
-		<li>{{ transaction.title }}</li>
-		<ul>
-			{% for transdet in transaction.transactiondetail_set.all %}
-			{% if transaction.group.group_id != 0 %}
-			<li>{{ transdet.user.user_name }} lent {{ transdet.lent }} rupees in the group {{ transaction.group.group_name }}</li>
-			{% else %}
-			<li>{{ transdet.user.user_name }} lent {{ transdet.lent }} rupees outside any group</li>
-			{% endif %}
-			{% endfor %}
-		</ul>
-	{%endfor%}
-	</ul>
+	<a href="{%url 'dashboard:settleup' friend.id%}">
+		<button class="btn btn-secondary float-right">SettleUp</button>
+	</a>
+
+	{% if state == 'unsettled'%}
+		<div class="container">
+			<div class="card">
+			{%for key,value in mydict.items%}
+				{%if key.group.group_name == 'None'%}
+					<div class="card-body">
+						<p>{{key.title}}</p>
+						<p>{{friend}} owes {{value}} to you</p>
+					</div>
+				{%else%}
+					<div class="card-body">
+						<a href="{% url 'dashboard:group' friend.id %}"> {{ key.group.group_name }} </a>
+						<p>{{friend}} owes {{value}} to you</p>
+					</div>
+				{%endif%}
+			{%endfor%}
+
+			</div>
+		</div>
+	{% else %}
+		<div  class="container">
+			<br><br><br>
+			<p>You are all settled up</p>
+		</div>
+	{%endif%}
+
 {% endblock %}

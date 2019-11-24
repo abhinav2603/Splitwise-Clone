@@ -9,12 +9,28 @@
 
 
 {% block content %}
-	<ul>
-	{% for friend in user.friends.all %}
-		<li><a href="{% url 'dashboard:friend' friend.id %}">{{ friend.user_name }}</a>
-		</li>
-	{%endfor%}
-	</ul>
+	<div class="container">
+		<div class="card">
+			{%for key,value in mydict.items%}
+				{%if value > 0%}
+					<div class="card-body">
+						<h><a href="{% url 'dashboard:friend' key.id %}">{{ key.user_name }}</a></h><br>
+						<p>You owe Rs.{{ value }} to {{key}}</p>
+					</div>
+				{%elif value == 0%}
+					<div class="card-body">
+						<h><a href="{% url 'dashboard:friend' key.id %}">{{ key.user_name }}</a></h><br>
+						<p>{{key}} owes you nothing</p>
+					</div>
+				{%else%}
+					<div class="card-body">
+						<h><a href="{% url 'dashboard:friend' key.id %}">{{ key.user_name }}</a></h><br>
+						<p>You owe Rs. {{ value }} to {{key}}</p>
+					</div>
+				{%endif%}
+			{%endfor%}
+		</div>
+	</div>
 
 	<div class="container">
 		<div id="accordion" style="margin-top:2%">
