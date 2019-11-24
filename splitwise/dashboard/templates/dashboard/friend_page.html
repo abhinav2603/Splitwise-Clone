@@ -17,14 +17,14 @@
 		<div class="container">
 			<div class="card">
 			{%for key,value in mydict.items%}
-				{%if key.group.group_name == 'None'%}
+				{%if key.group_name == 'None'%}
 					<div class="card-body">
-						<p>{{key.title}}</p>
+						<p>Non Group Transactions</p>
 						<p>{{friend}} owes {{value}} to you</p>
 					</div>
 				{%else%}
 					<div class="card-body">
-						<a href="{% url 'dashboard:group' friend.id %}"> {{ key.group.group_name }} </a>
+						<a href="{% url 'dashboard:group' friend.id %}"> {{ key.group_name }} </a>
 						<p>{{friend}} owes {{value}} to you</p>
 					</div>
 				{%endif%}
