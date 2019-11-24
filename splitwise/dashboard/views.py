@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db.models import Q
 
-from .forms import TransactionForm, TransactionDetailForm, TransactionParticipantsForm, RegisterForm
+from .forms import TransactionForm, TransactionDetailForm, TransactionParticipantsForm, RegisterForm, ModifyTransactionForm
 
 
 from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm, UpdatedpForm, UploadFileForm
@@ -577,5 +577,29 @@ def activity(request):
 	user_id=request.user.id
 	user=myUser.objects.get(pk=user_id)
 	transactions=Transaction.objects.filter(participants__in=[user]).order_by('-date')
+	modifyForm=ModifyTransactionForm()
+	if request.method=="POST":
+		logging.debug('post request in activity')
+		#if 'modify' in request.POST:
+		logging.debug('post request for modify')
+		modifyForm=ModifyTransactionForm(request.POST)
+		if modifyForm.is_valid():
+			logging.debug('Modify form is valid')
+			transaction=Transaction.objects.get(pk=int(modifyForm.cleaned_data.get('transaction')))
+			newTitle=modifyForm.cleaned_data.get('title')
+			newType=modifyForm.cleaned_data.get('tag')
+			logging.debug('new tag: '+newType)
+			newComment=modifyForm.cleaned_data.get('comment')
+			logging.debug("entered title is: "+newTitle)
+			if newTitle!="":
+				transaction.title=newTitle
+			transaction.trans_type=newType
+			if newComment!="":
+				newComment=user.user_name+":\n"+newComment
+				oldComm=transaction.comments
+				transaction.comments=oldComm+newComment
+			transaction.save()
+		else:
+			modifyForm=ModifyTransactionForm()
 
-	return render(request, 'dashboard/activity_page.html',{'user':user,'transactions':transactions})
+	return render(request, 'dashboard/activity_page.html',{'user':user,'transactions':transactions, 'modifyForm':modifyForm})
