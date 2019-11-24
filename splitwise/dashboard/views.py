@@ -103,6 +103,8 @@ def personal_page(request):
 				transFormType=2
 				logging.debug('first form submitted')
 				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
+			else:
+				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 			
 		elif transFormType==2:
 			logging.debug('formType=2')
@@ -116,13 +118,17 @@ def personal_page(request):
 				transFormType=3
 				logging.debug('Here')
 				transactionForm=TransactionDetailForm(participants_list=participants_list)
+			else:
+				transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
 		else:
 			logging.debug('formType=3')
 			trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
 			if trForm.is_valid():
 				handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
-				transFormType=3
+				transFormType=1
 				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+			else:
+				transactionForm=TransactionDetailForm(participants_list=participants_list)
 
 	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm,"trType":transFormType});
 

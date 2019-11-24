@@ -56,24 +56,27 @@ class TransactionDetailForm(forms.Form):
 			self.fields[str(participant.id)+'gave']=forms.FloatField(label=participant.user_name+' gave')
 			self.fields[str(participant.id)+'share']=forms.FloatField(label=participant.user_name+' share')
 
-	#def clean(self):
-	#	form_data=self.cleaned_data
-	#	total_given=0
-	#	total_share=0
-	#	participants_ids=[]
-	#	for participant in self.participants_list:
-	#		participants_ids.append(participant.id)
+	def clean(self):
+		form_data=super().clean()
+		#form_data=self.cleaned_data
+		total_given=0
+		total_share=0
+		participants_ids=[]
+		for participant in self.participants_list:
+			participants_ids.append(participant.id)
 
-	#	for i in participants_ids:
-	#		total_given=total_given+form_data[str(i)+'gave']
-	#		total_share=total_share+form_data[str(i)+'share']
+		for i in participants_ids:
+			total_given=total_given+form_data[str(i)+'gave']
+			total_share=total_share+form_data[str(i)+'share']
 
-	#	if total_given!=form_data['amount']:
-	#		self._errors['amount']=["Total amount given by participants don't match"]
-	#	if total_share!=form_data['amount']:
-	#		self._errors['amount']=["Total share of participants don't match"]
+		if total_given!=form_data['amount']:
+			raise forms.ValidationError('Total amount given by participants don\'t match')
+			#self._errors['amount']=["Total amount given by participants don't match"]
+		if total_share!=form_data['amount']:
+			raise forms.ValidationError('Total share of participants don\'t match')
+			#self._errors['amount']=["Total share of participants don't match"]
 
-	#	return form_data
+		return form_data
 
 
 

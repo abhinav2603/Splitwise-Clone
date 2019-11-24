@@ -70,6 +70,20 @@
     </div>
   </div>
 
+  {% if transForm.errors %}
+      {% for field in transForm %}
+          {% for error in field.errors %}
+              <div class="alert alert-danger alert-dismissible">{{ field.name }}:{{ error|escape }}<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+              </div>
+          {% endfor %}
+      {% endfor %}
+      {% for error in transForm.non_field_errors %}
+          <div class="alert alert-danger alert-dismissible">
+              {{ error|escape }}<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          </div>
+      {% endfor %}
+  {% endif %}
+
 
   <!--for bootstrap -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
@@ -84,7 +98,7 @@
 
     if({{ trType }}==2)
     {
-      form.show=true;
+      //form.show=true;
       $(document).ready(function(){
       // Show the Modal on load
       $("#exampleModalCenter").modal("show");
@@ -93,7 +107,7 @@
     if({{ trType }}==3)
     {
       btn.textContent="Done";
-      form.show=true;
+      //form.show=true;
       $(document).ready(function(){
       // Show the Modal on load
       $("#exampleModalCenter").modal("show");
