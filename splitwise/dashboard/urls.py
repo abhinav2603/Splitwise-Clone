@@ -23,7 +23,7 @@ urlpatterns = [
     path('leave/<int:group_id>',views.leave,name='leave'),
     path('password', views.change_password, name='changePassword'),
     path('insights', views.insights, name='insights'),
-    path('pdf_view', views.pdf_view, name='pdf_view')
+    path('pdf_view', views.pdf_view, name='pdf_view'),
     path('balance/<int:group_id>',views.balance,name='balance'),
-    path('activity',views.activity,name='activity')
+    path('activity',views.activity,name='activity'),
 ]
