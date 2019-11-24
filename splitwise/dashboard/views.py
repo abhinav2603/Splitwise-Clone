@@ -425,7 +425,7 @@ def group_page(request,group_id):
 		for k,v in d.items():
 			dtuple[k]=(v,-v)
 
-	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType, 'transactions':transactions,'mydict':dtuple});
+	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType}) #, 'transactions':transactions,'mydict':dtuple});
 
 ##########################################################################################
 
