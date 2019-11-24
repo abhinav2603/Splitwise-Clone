@@ -567,7 +567,7 @@ def userprofile(request):
 				transactionForm=TransactionDetailForm(participants_list=participants_list)
 	return render(request,'dashboard/profile.html',{'user':user, "transForm":transactionForm,"trType":transFormType})
 
-##################################3--------------LEAVE GROUP--------------------------##########################
+##############################--------------LEAVE GROUP--------------------------##########################
 
 def leave(request,group_id):
 	user_id = request.user.id
@@ -671,7 +671,7 @@ def leave(request,group_id):
 		dtuple[k]=(v,-v)
 	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form});
 
-############################-----------DELETE GROUP---------########################################3
+############################-----------DELETE GROUP---------########################################
 
 def delete(request,group_id):
 	state='settled'
@@ -798,5 +798,3 @@ def change_password(request):
     return render(request, 'dashboard/change_password.html', {
         'form': form
     })
-
-	
