@@ -40,6 +40,7 @@ class Transaction(models.Model):
 	date=models.DateTimeField()
 	group=models.ForeignKey(Group,on_delete=models.CASCADE,default=1)
 	participants=models.ManyToManyField(User)
+	comments=models.CharField(max_length=1000, blank=True)
 	def __str__(self):
 		return self.title
 
