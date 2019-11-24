@@ -12,12 +12,12 @@
 	<div class="container">
 		<div class="card">
 			{%for key,value in mydict.items%}
-				{%if value > 0%}
+				{%if value.0 > 0%}
 					<div class="card-body">
 						<h><a href="{% url 'dashboard:friend' key.id %}">{{ key.user_name }}</a></h><br>
-						<p>You owe Rs.{{ value }} to {{key}}</p>
+						<p>You owe Rs.{{ value.0 }} to {{key}}</p>
 					</div>
-				{%elif value == 0%}
+				{%elif value.0 == 0%}
 					<div class="card-body">
 						<h><a href="{% url 'dashboard:friend' key.id %}">{{ key.user_name }}</a></h><br>
 						<p>{{key}} owes you nothing</p>
@@ -25,7 +25,7 @@
 				{%else%}
 					<div class="card-body">
 						<h><a href="{% url 'dashboard:friend' key.id %}">{{ key.user_name }}</a></h><br>
-						<p>You owe Rs. {{ value }} to {{key}}</p>
+						<p>{{key}} owe Rs. {{ value.1 }} to You</p>
 					</div>
 				{%endif%}
 			{%endfor%}

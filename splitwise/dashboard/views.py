@@ -91,8 +91,11 @@ def personal_page(request):
 					d[credit]=d[credit]-lent
 				else :
 					d[credit]=(-1*lent)
+	dtuple=dict()
+	for k,v in d.items():
+		dtuple[k]=(v,-v)
 
-	return render(request,'dashboard/personal_page.html',{'user':user,'nonfriend':nonfriend,'mydict':d});
+	return render(request,'dashboard/personal_page.html',{'user':user,'nonfriend':nonfriend,'mydict':dtuple});
 
 def friend_page(request,friend_id):
 	user_id=request.user.id
@@ -101,9 +104,11 @@ def friend_page(request,friend_id):
 	transactions=Transaction.objects.filter(participants__in=[user]).filter(participants__in=[friend])
 	groups=myGroup.objects.filter(users__in=[user]).filter(users__in=[friend])
 	d=dict()
+	dtuple=dict()
 	state='settled'
 	for group in groups:
 		d[group]=0
+
 	for group in groups:
 		for transactions in group.transaction_set.all():
 			for transdet in transactions.transactiondetail_set.all():
@@ -114,17 +119,19 @@ def friend_page(request,friend_id):
 					d[group]=d[group]+lent
 				elif debit==user:
 					d[group]=d[group]-lent
-
 	for k,v in d.items():
 		if v != 0:
 			state='unsettled'
 			break
+	for k,v in d.items():
+		dtuple[k]=(v,-v)
+	
 
 	return render(request,'dashboard/friend_page.html',{
 		'user':user,
 		'friend':friend,
 		'transactions':transactions,
-		'mydict':d,
+		'mydict':dtuple,
 		'state':state})
 
 def settleUp(request,friend_id):

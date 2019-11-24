@@ -20,12 +20,24 @@
 				{%if key.group_name == 'None'%}
 					<div class="card-body">
 						<p>Non Group Transactions</p>
-						<p>{{friend}} owes {{value}} to you</p>
+						{%if value.0 > 0%}
+							<p>You owe Rs. {{value.0}} to {{friend}}</p>
+						{% elif value.0 == 0%}
+							<p>{{key}} owes you nothing</p>
+						{%else%}
+							<p>{{key}} owes you Rs. {{value.1}}</p>
+						{%endif%}
 					</div>
 				{%else%}
 					<div class="card-body">
 						<a href="{% url 'dashboard:group' friend.id %}"> {{ key.group_name }} </a>
-						<p>{{friend}} owes {{value}} to you</p>
+						{%if value.0 > 0%}
+							<p>You owe Rs. {{value.0}} to {{friend}}</p>
+						{% elif value.0 == 0%}
+							<p>{{key}} owes you nothing</p>
+						{%else%}
+							<p>{{friend}} owes you Rs. {{value.1}}</p>
+						{%endif%}
 					</div>
 				{%endif%}
 			{%endfor%}
