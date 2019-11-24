@@ -9,8 +9,8 @@
 
 {% block content %}
 
-<a href="">
-	<button class="btn btn-secondary float-left ml-5"><a data-toggle="modal" data-target="#groupSettleModal">SettleUp</a></button>
+<a data-toggle="modal" data-target="#groupSettleModal">
+	<button class="btn btn-secondary float-left ml-5">SettleUp</button>
 </a>
 <a href="{%url 'dashboard:balance' group.group_id%}">
 	<button class="btn btn-secondary float-right mr-5">Balances</button>
