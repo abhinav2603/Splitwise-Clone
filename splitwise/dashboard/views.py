@@ -161,10 +161,12 @@ def personal_page(request):
 			logging.debug('formType=3')
 			trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
 			if trForm.is_valid():
+				logging.debug('this is valid')
 				handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
 				transFormType=1
 				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 			else:
+				logging.debug('this is invalid')
 				transactionForm=TransactionDetailForm(participants_list=participants_list)
 
 	return render(request,'dashboard/personal_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple});
@@ -189,7 +191,7 @@ def handleTransactionParticipants(request,trForm):
 		part=trForm.cleaned_data.get('participants')
 		for participant in part:
 			participants_list.append(participant)
-		participants_list.append(myUser.objects.get(pk=request.user.id))
+		#participants_list.append(myUser.objects.get(pk=request.user.id))
 	return participants_list
 
 def handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list):
