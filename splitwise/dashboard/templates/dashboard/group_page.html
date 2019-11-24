@@ -10,12 +10,36 @@
 {% block content %}
 
 <a href="">
-	<button class="btn btn-secondary float-left ml-5"type="submit">SettleUp</button>
+	<button class="btn btn-secondary float-left ml-5"><a data-toggle="modal" data-target="#groupSettleModal">SettleUp</a></button>
 </a>
 <a href="{%url 'dashboard:balance' group.group_id%}">
 	<button class="btn btn-secondary float-right mr-5">Balances</button>
 </a>
 <br><br>
+
+<!-- Modal -->
+  <div class="modal fade" id="groupSettleModal" tabindex="-1" role="dialog" aria-labelledby="groupSettleModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="groupSettleModalTitle">Select people to settle up with</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form method="post">
+          <div class="modal-body" id="modifyFormBody">
+            {% csrf_token %}
+            {{ groupSettleForm.as_p }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button id="nxtbtn" type="submit" class="btn btn-primary" value="submit">Settle Up!</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
 
 <ul>

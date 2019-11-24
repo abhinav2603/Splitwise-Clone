@@ -96,6 +96,12 @@ class ModifyTransactionForm(forms.Form):
 	#	super(TransactionDetailForm, self).__init__(*args, **kwargs)
 	#	self.fields['transaction']=
 
-
+class GroupSettleForm(forms.Form):
+	def __init__(self,*args,**kwargs):
+		group_id=kwargs.pop('group_id')
+		user_id=kwargs.pop('user_id')
+		group=Group.objects.get(group_id=group_id)
+		super(GroupSettleForm, self).__init__(*args, **kwargs)
+		self.fields['users']=forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple(),queryset=group.users.exclude(pk=user_id))
 
 
