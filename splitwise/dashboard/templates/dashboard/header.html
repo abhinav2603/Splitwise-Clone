@@ -26,6 +26,9 @@
         <li class="nav-item {% block Activitiesactive %}{% endblock %}">
           <a class="nav-link" href="">Activities</a>
         </li>
+        <li class="nav-item {% block Insightsactive %}{% endblock %}">
+          <a class="nav-link" href="{% url 'dashboard:insights' %}">Insights</a>
+        </li>
         <li class="nav-item {% block Profileactive %}{% endblock %}">
           <a class="nav-link" href="{% url 'dashboard:user_profile' %}">Profile</a>
         </li>

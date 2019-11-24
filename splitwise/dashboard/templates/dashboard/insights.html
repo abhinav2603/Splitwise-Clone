@@ -1,0 +1,16 @@
+{% extends "dashboard/header.html" %}
+
+{% block title %}{{ user.user_name }}{% endblock %}
+
+{% block brand %}{{ user.user_name }}{% endblock %}
+
+{% block Insightsactive %}active{% endblock %}
+
+
+{% block content %}
+<div class="container">
+<h3> Click the button below to see full detailed insight of your expenditure </h3>
+<button type="button" class="btn btn-info" ><a href="{% url 'dashboard:pdf_view' %}">Print Report</a></button>
+</div>
+
+{% endblock %}
