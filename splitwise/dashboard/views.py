@@ -28,6 +28,9 @@ transaction=None
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
+from datetime import date
+
+today = date.today()
 
 # Create your views here.
 def index(request):
@@ -94,6 +97,30 @@ def personal_page(request):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	nonfriend=myUser.objects.exclude(friends__in=[user])
+	transactions=Transaction.objects.filter(participants__in=[user])
+	friend=user.friends.all()
+	d=dict()
+	for friend in friend:
+		d[friend]=0
+	for transaction in transactions:
+		for transdet in transaction.transactiondetail_set.all():
+			messages.info(request,f"{transdet.lent} {transdet.creditor}")
+			credit=transdet.creditor
+			debit=transdet.debitor
+			lent=transdet.lent
+			if credit == user:
+				if debit in d.keys():
+					d[debit]=d[debit]+lent
+				else:
+					d[debit]=lent
+			elif debit == user:
+				if credit in d.keys():
+					d[credit]=d[credit]-lent
+				else :
+					d[credit]=(-1*lent)
+	dtuple=dict()
+	for k,v in d.items():
+		dtuple[k]=(v,-v)
 	#formType=1
 	#participants_list=[]
 	#title="the transaction"
@@ -139,7 +166,7 @@ def personal_page(request):
 			else:
 				transactionForm=TransactionDetailForm(participants_list=participants_list)
 
-	return render(request,'dashboard/pers_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm,"trType":transFormType});
+	return render(request,'dashboard/personal_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple});
 
 
 def handleTransaction(request,trForm):
@@ -204,16 +231,89 @@ def handleTransactionDetail(request,trForm,title,trans_type,date,group,participa
 				gave_less.sort(key=lambda tup:tup[1], reverse=True)		
 
 
-
 def friend_page(request,friend_id):
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
 	friend=get_object_or_404(myUser, pk=friend_id)
 	transactions=Transaction.objects.filter(participants__in=[user]).filter(participants__in=[friend])
+	groups=myGroup.objects.filter(users__in=[user]).filter(users__in=[friend])
+	d=dict()
+	dtuple=dict()
+	state='settled'
+	for group in groups:
+		d[group]=0
+
+	for group in groups:
+		for transactions in group.transaction_set.all():
+			for transdet in transactions.transactiondetail_set.all():
+				credit=transdet.creditor
+				debit=transdet.debitor
+				lent=transdet.lent
+				if credit == user:
+					d[group]=d[group]+lent
+				elif debit==user:
+					d[group]=d[group]-lent
+	for k,v in d.items():
+		if v != 0:
+			state='unsettled'
+			break
+	for k,v in d.items():
+		dtuple[k]=(v,-v)
+	
+
 	return render(request,'dashboard/friend_page.html',{
 		'user':user,
 		'friend':friend,
-		'transactions':transactions})
+		'transactions':transactions,
+		'mydict':dtuple,
+		'state':state})
+
+def settleUp(request,friend_id):
+	user_id=request.user.id
+	user=get_object_or_404(myUser, pk=user_id)
+	friend=get_object_or_404(myUser, pk=friend_id)
+	transactions=Transaction.objects.filter(participants__in=[user]).filter(participants__in=[friend])
+	groups=myGroup.objects.filter(users__in=[user]).filter(users__in=[friend])
+	d=dict()
+	for group in groups:
+		d[group]=0
+	for group in groups:
+		for transactions in group.transaction_set.all():
+			for transdet in transactions.transactiondetail_set.all():
+				credit=transdet.creditor
+				debit=transdet.debitor
+				lent=transdet.lent
+				if credit == user:
+					d[group]=d[group]+lent
+				elif debit==user:
+					d[group]=d[group]-lent
+
+	for k,v in d.items():
+		if v > 0:
+			newtrans=Transaction(group=k,title='Settled Up',trans_type='SettleUp',date=today)
+			newtrans.save()
+			newtrans.participants.add(user)
+			newtrans.participants.add(friend)
+			newtrans.save()
+			newtransdet=TransactionDetail(trans=newtrans,creditor=friend,debitor=user,lent=v)
+			newtransdet.save()
+		elif v < 0:
+			newtrans=Transaction(group=k,title='Settled Up',trans_type='SettleUp',date=today)
+			newtrans.save()
+			newtrans.participants.add(user)
+			newtrans.participants.add(friend)
+			newtrans.save()
+			newtransdet=TransactionDetail(trans=newtrans,creditor=user,debitor=friend,lent=(-1*v))
+			newtransdet.save()
+	
+	state='settled'
+	return render(request,'dashboard/friend_page.html',{
+		'user':user,
+		'friend':friend,
+		'transactions':transactions,
+		'mydict':d,
+		'state':state})
+
 
 def group_page(request,group_id):
 	user_id=request.user.id
