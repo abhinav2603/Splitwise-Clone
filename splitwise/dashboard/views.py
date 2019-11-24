@@ -240,19 +240,19 @@ def friend_page(request,friend_id):
 	d=dict()
 	dtuple=dict()
 	state='settled'
-	for group in groups:
-		d[group]=0
+	for group1 in groups:
+		d[group1]=0
 
-	for group in groups:
-		for transactions in group.transaction_set.all():
+	for group1 in groups:
+		for transactions in group1.transaction_set.all():
 			for transdet in transactions.transactiondetail_set.all():
 				credit=transdet.creditor
 				debit=transdet.debitor
 				lent=transdet.lent
 				if credit == user:
-					d[group]=d[group]+lent
+					d[group1]=d[group1]+lent
 				elif debit==user:
-					d[group]=d[group]-lent
+					d[group1]=d[group1]-lent
 	for k,v in d.items():
 		if v != 0:
 			state='unsettled'
