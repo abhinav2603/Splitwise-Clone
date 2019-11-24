@@ -252,8 +252,8 @@ def handleTransactionDetail(request,trForm,title,trans_type,date,group,participa
 				givDict[transMinDet.debitor]-=transMinDet.lent
 
 			for newTransDet in newTransaction.transactiondetail_set.all():
-				givDict[newTransDet.creditor]+=transMinDet.lent
-				givDict[newTransDet.debitor]-=transMinDet.lent
+				givDict[newTransDet.creditor]+=newTransDet.lent
+				givDict[newTransDet.debitor]-=newTransDet.lent
 
 			for user in givDict.keys():
 				if givDict[user]>0:
@@ -482,7 +482,7 @@ def my_group(request):
 	form=NewGroupForm(user_id=request.user.id)
 	if request.method=="POST":
 		logging.debug('post request')
-		if 'submit' in request.POST:
+		if 'submit' not in request.POST:
 			form=NewGroupForm(request.POST,user_id=request.user.id)
 			if form.is_valid():
 				group_name=form.cleaned_data.get('group_name')

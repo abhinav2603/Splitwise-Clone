@@ -10,7 +10,7 @@ class User(models.Model):
 	user_name=models.CharField(max_length=50)
 	email=models.EmailField(max_length=50, blank = True)
 	friends = models.ManyToManyField("self",blank=True)
-	dp=models.ImageField(upload_to='profile_pic')#,default='profile_pic/default.png')
+	dp=models.ImageField(upload_to='profile_pic',default='profile_pic/default.png')
 	def __str__(self):
 		return self.user_name
 #class Friends(models.Model):
