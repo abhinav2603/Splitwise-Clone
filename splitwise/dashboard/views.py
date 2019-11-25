@@ -267,6 +267,14 @@ def handleTransactionDetail(request,trForm,title,trans_type,date,group,participa
 			gave_extra.sort(key=lambda tup:tup[1],reverse=True)
 			gave_less.sort(key=lambda tup:tup[1], reverse=True)
 
+			logging.debug('gave_extra array is:')
+			for i in gave_extra:
+				logging.debug(i[0].user_name+' '+str(i[1]))
+
+			logging.debug('gave_less array is:')
+			for i in gave_less:
+				logging.debug(i[0].user_name+' '+str(i[1]))
+
 			while len(gave_extra)!=0:
 				if gave_extra[0][1]>gave_less[0][1]:
 					newTransactionDetail=TransactionDetail(trans=transMinimiser,creditor=gave_extra[0][0],debitor=gave_less[0][0],lent=gave_less[0][1])
