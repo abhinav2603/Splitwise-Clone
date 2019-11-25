@@ -3,7 +3,7 @@
 {% block title %}{{ user.user_name }}{% endblock %}
 
 {% block brand %} 
-	<img src ="{{ image }}" class="rounded-circle" alt="Cinque Terre"width=50 height=50> {{ user.user_name }}{% endblock %}
+	<img src ="{{ user.dp.url }}" class="rounded-circle" alt=""width=50 height=50> {{ user.user_name }} and {{friend.user_name}}{% endblock %}
 
 {% block Friendsactive %}active{% endblock %}
 
@@ -30,7 +30,7 @@
 					</div>
 				{%else%}
 					<div class="card-body">
-						<a href="{% url 'dashboard:group' friend.id %}"> {{ key.group_name }} </a>
+						<a href="{% url 'dashboard:group' key.group_id %}"> {{ key.group_name }} </a>
 						{%if value.0 > 0%}
 							<p>You owe Rs. {{value.0}} to {{friend}}</p>
 						{% elif value.0 == 0%}
