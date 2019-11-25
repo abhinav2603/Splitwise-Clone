@@ -492,7 +492,7 @@ def group_page(request,group_id):
 					transactionForm=TransactionDetailForm(participants_list=participants_list)
 
 	dtuple=dict()
-	for transactions in group.transaction_set.all():
+	for transactions in group.transaction_set.exclude(trans_type="mintrans"):
 		for transdet in transactions.transactiondetail_set.all():
 			credit=transdet.creditor
 			debit=transdet.debitor
@@ -588,7 +588,7 @@ def my_group(request):
 	for group2 in group1:
 		d[group2]=0
 	for group2 in group1:
-		for transactions in group2.transaction_set.all():
+		for transactions in group2.transaction_set.filter(trans_type="mintrans"):
 			for transdet in transactions.transactiondetail_set.all():
 				credit=transdet.creditor
 				debit=transdet.debitor
