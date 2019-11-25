@@ -310,7 +310,12 @@ def friend_page(request,friend_id):
 		d[group1]=0
 
 	for group1 in groups:
-		for transactions in group1.transaction_set.all():
+		if group1.group_id==0:
+			transSet=group1.transaction_set.all()
+		else:
+			transSet=group1.transaction_set.filter(trans_type="mintrans")
+		for transactions in transSet:
+
 			for transdet in transactions.transactiondetail_set.all():
 				credit=transdet.creditor
 				debit=transdet.debitor
@@ -532,6 +537,10 @@ def my_group(request):
 
 				#the transaction minimiser transaction
 				newTransaction=Transaction(title="Min_trans",trans_type="mintrans",date=datetime.date.today(),group=newGrp)
+				newTransaction.save()
+
+				for someParti in participants:
+					newTransaction.participants.add(someParti)
 				newTransaction.save()
 
 				return redirect("dashboard:all_groups")
