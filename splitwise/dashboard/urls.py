@@ -26,4 +26,5 @@ urlpatterns = [
     path('pdf_view', views.pdf_view, name='pdf_view'),
     path('balance/<int:group_id>',views.balance,name='balance'),
     path('activity',views.activity,name='activity'),
+    path('excel',views.some_view,name='xlview'),
 ]

@@ -9,12 +9,12 @@ from django.db.models import Q
 from .forms import TransactionForm, TransactionDetailForm, TransactionParticipantsForm, RegisterForm, ModifyTransactionForm, GroupSettleForm
 
 
-from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm, UpdatedpForm, UploadFileForm
+from .models import User as myUser, Group as myGroup, Transaction, TransactionDetail, NewGroupForm, UpdatedpForm, UploadFileForm, DateRangeForm
 
 import logging
 import datetime
 import pdb
-
+import csv
 LOG_FILENAME = 'views.log'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
@@ -482,7 +482,7 @@ def my_group(request):
 	form=NewGroupForm(user_id=request.user.id)
 	if request.method=="POST":
 		logging.debug('post request')
-		if 'submit' in request.POST:
+		if 'submit' not in request.POST:
 			form=NewGroupForm(request.POST,user_id=request.user.id)
 			if form.is_valid():
 				group_name=form.cleaned_data.get('group_name')
@@ -504,6 +504,7 @@ def my_group(request):
 				trForm=TransactionForm(request.POST, user_id=user_id)
 				if trForm.is_valid():
 					title,trans_type,date,group=handleTransaction(request,trForm)
+					messages.info(request,'yes!!!!')
 					transFormType=2
 					logging.debug('first form submitted')
 					transactionForm=TransactionParticipantsForm(user_id=request.user.id,group_id=group.group_id)
@@ -847,6 +848,9 @@ def insights(request):
 	group = get_list_or_404(myGroup, users__in = [user])
 	#transaction = Transaction.objects.filter(participants__in=[user]).order_by('date')
 	transactiondetail = TransactionDetail.objects.filter(Q(creditor__in = [user]) | Q(debitor__in = [user])).order_by('trans__date')
+	form=DateRangeForm()
+	#if request.method=='POST':
+	#	form=D
 
 	##############################################	
 	dictlst = []
@@ -1068,6 +1072,32 @@ def pdf_view(request):
 		response = HttpResponse(pdf.read(), content_type='application/pdf')
 		response['Content-Disposition'] = 'inline;filename=insights.pdf'
 		return response
+
+def some_view(request):
+    # Create the HttpResponse object with the appropriate CSV header.
+	user_id=request.user.id
+	user=get_object_or_404(myUser,pk=user_id)
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+	writer = csv.writer(response)
+	transactions=Transaction.objects.filter(date__gte=d1).filter(date__lte=d2)
+	d=dict()
+	for trans in transactions:
+		for transdet in trans.transactiondetail_set.all():
+			credit=transdet.creditor
+			debit=transdet.debitor
+			lent=transdet.lent
+			if credit == user:
+				writer.writerow([user.user_name,debit.user_name,lent,trans.date,trans.title,trans.trans_type,trans.group])
+			elif debitor == user:
+				writer.writerow([credit.user_name,debit.user_name,lent,trans.date,trans.title,trans.trans_type,trans.group])
+
+	writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
+	writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
+
+	return response
+
 def activity(request):
 	user_id=request.user.id
 	user=myUser.objects.get(pk=user_id)

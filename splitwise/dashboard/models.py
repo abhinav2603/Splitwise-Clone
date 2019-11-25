@@ -64,6 +64,10 @@ class NewGroupForm(forms.ModelForm):
 		model=Group
 		fields = ['group_name', 'users']
 
+class DateRangeForm(forms.Form):
+	d1=forms.DateTimeField(widget=forms.SelectDateWidget())
+	d2=forms.DateTimeField(widget=forms.SelectDateWidget())
+
 class UpdatedpForm(forms.Form):
 	file=forms.FileField()
 	#class Meta:
