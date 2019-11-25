@@ -6,6 +6,11 @@ from .models import Profile,Transaction,User as myUser,Group
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
+import logging
+
+LOG_FILENAME = 'forms.log'
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class RegisterForm(UserCreationForm):
     class Meta:
@@ -55,6 +60,8 @@ class TransactionParticipantsForm(forms.Form):
 class TransactionDetailForm(forms.Form):
 	amount=forms.FloatField(label='Total amount paid',min_value=0)
 	def __init__(self,*args,**kwargs):
+		logging.debug('initializing')
+		logger.error('initializing')
 		self.participants_list=kwargs.pop('participants_list')
 		super(TransactionDetailForm, self).__init__(*args, **kwargs)
 		for participant in self.participants_list:
@@ -69,16 +76,23 @@ class TransactionDetailForm(forms.Form):
 		participants_ids=[]
 		for participant in self.participants_list:
 			participants_ids.append(participant.id)
+			logger.debug(participant.id)
 
 		for i in participants_ids:
 			total_given=total_given+form_data[str(i)+'gave']
 			total_share=total_share+form_data[str(i)+'share']
+		logger.debug('total given'+str(total_given))
+		logger.debug('total_share'+str(total_share))
+		logger.debug('total amount'+str(form_data['amount']))
 
 		if total_given!=form_data['amount']:
+			logger.debug('Total amount given by participants don\'t match')
 			raise forms.ValidationError('Total amount given by participants don\'t match')
+			logging.debug('Total amount given by participants don\'t match')
 			#self._errors['amount']=["Total amount given by participants don't match"]
 		if total_share!=form_data['amount']:
 			raise forms.ValidationError('Total share of participants don\'t match')
+			logging.debug('Total share of participants don\'t match')
 			#self._errors['amount']=["Total share of participants don't match"]
 
 		return form_data

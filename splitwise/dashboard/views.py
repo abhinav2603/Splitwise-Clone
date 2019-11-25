@@ -156,10 +156,12 @@ def personal_page(request):
 			logging.debug('formType=3')
 			trForm=TransactionDetailForm(request.POST,participants_list=participants_list)
 			if trForm.is_valid():
+				logging.debug('this is valid')
 				handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list)
 				transFormType=1
 				transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 			else:
+				logging.debug('this is invalid')
 				transactionForm=TransactionDetailForm(participants_list=participants_list)
 
 	return render(request,'dashboard/personal_page.html',{'user':user,"nonfriend":nonfriend, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple});
@@ -185,7 +187,7 @@ def handleTransactionParticipants(request,trForm):
 		part=trForm.cleaned_data.get('participants')
 		for participant in part:
 			participants_list.append(participant)
-		participants_list.append(myUser.objects.get(pk=request.user.id))
+		#participants_list.append(myUser.objects.get(pk=request.user.id))
 	return participants_list
 
 def handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list):
@@ -225,7 +227,69 @@ def handleTransactionDetail(request,trForm,title,trans_type,date,group,participa
 				if gave_less[0][1]==0:
 					del gave_less[0]
 				gave_extra.sort(key=lambda tup:tup[1],reverse=True)
-				gave_less.sort(key=lambda tup:tup[1], reverse=True)		
+				gave_less.sort(key=lambda tup:tup[1], reverse=True)
+
+		if group.group_id!=0:
+
+			#now minimise transactions in the group
+			gave_extra=[]
+			gave_less=[]
+
+			#the transaction object which minimises transactions
+			transMinimiser=Transaction.objects.get(group=group,trans_type="mintrans")
+
+			givDict={}
+
+			for user in group.users.all():
+				givDict[user]=0
+
+			for transMinDet in transMinimiser.transactiondetail_set.all():
+				givDict[transMinDet.creditor]+=transMinDet.lent
+				givDict[transMinDet.debitor]-=transMinDet.lent
+
+			for newTransDet in newTransaction.transactiondetail_set.all():
+				givDict[newTransDet.creditor]+=newTransDet.lent
+				givDict[newTransDet.debitor]-=newTransDet.lent
+
+			for user in givDict.keys():
+				if givDict[user]>0:
+					gave_extra.append([user,givDict[user]])
+				elif givDict[user]<0:
+					gave_less.append([user,-givDict[user]])
+
+			#now delete the existing transaction minimiser transactions
+			TransactionDetail.objects.filter(trans=transMinimiser).delete()
+
+			gave_extra.sort(key=lambda tup:tup[1],reverse=True)
+			gave_less.sort(key=lambda tup:tup[1], reverse=True)
+
+			logging.debug('gave_extra array is:')
+			for i in gave_extra:
+				logging.debug(i[0].user_name+' '+str(i[1]))
+
+			logging.debug('gave_less array is:')
+			for i in gave_less:
+				logging.debug(i[0].user_name+' '+str(i[1]))
+
+			while len(gave_extra)!=0:
+				if gave_extra[0][1]>gave_less[0][1]:
+					newTransactionDetail=TransactionDetail(trans=transMinimiser,creditor=gave_extra[0][0],debitor=gave_less[0][0],lent=gave_less[0][1])
+					newTransactionDetail.save()
+					gave_extra[0][1]=gave_extra[0][1]-gave_less[0][1]
+					del gave_less[0]
+					gave_extra.sort(key=lambda tup:tup[1],reverse=True)
+					gave_less.sort(key=lambda tup:tup[1], reverse=True)
+				else:
+					newTransactionDetail=TransactionDetail(trans=transMinimiser,creditor=gave_extra[0][0],debitor=gave_less[0][0],lent=gave_extra[0][1])
+					newTransactionDetail.save()
+					gave_less[0][1]=gave_less[0][1]-gave_extra[0][1]
+					del gave_extra[0]
+					if gave_less[0][1]==0:
+						del gave_less[0]
+					gave_extra.sort(key=lambda tup:tup[1],reverse=True)
+					gave_less.sort(key=lambda tup:tup[1], reverse=True)
+
+
 
 ##################################################################################
 
@@ -448,7 +512,7 @@ def my_group(request):
 	form=NewGroupForm(user_id=request.user.id)
 	if request.method=="POST":
 		logging.debug('post request')
-		if 'submit' in request.POST:
+		if 'submit' not in request.POST:
 			form=NewGroupForm(request.POST,user_id=request.user.id)
 			if form.is_valid():
 				group_name=form.cleaned_data.get('group_name')
@@ -461,6 +525,11 @@ def my_group(request):
 				for part in participants:
 					newGrp.users.add(part)
 				newGrp.save()
+
+				#the transaction minimiser transaction
+				newTransaction=Transaction(title="Min_trans",trans_type="mintrans",date=datetime.date.today(),group=newGrp)
+				newTransaction.save()
+
 				return redirect("dashboard:all_groups")
 			else:
 				form=NewGroupForm(user_id=request.user.id)
