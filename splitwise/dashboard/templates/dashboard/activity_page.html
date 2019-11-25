@@ -11,7 +11,7 @@
 {% block content %}
 	<ul>
 	{% for transaction in transactions %}
-	<li><a data-toggle="modal" data-target="#modifyModal" onclick="clicked('{{ transaction.id }}','{{ transaction.trans_type }}')">{{ transaction.title }}</a> in the Group: {{ transaction.group.group_name }}</li>
+	<li><a data-toggle="modal" data-target="#modifyModal" onclick="clicked('{{ transaction.id }}','{{ transaction.trans_type }}')" name="submit">{{ transaction.title }}</a> in the Group: {{ transaction.group.group_name }}</li>
 	<ul>
 		{% for transDet in transaction.transactiondetail_set.all %}
 		{% if transDet.debitor.user_name == user.user_name %}

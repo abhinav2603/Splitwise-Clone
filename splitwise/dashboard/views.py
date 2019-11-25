@@ -512,7 +512,7 @@ def my_group(request):
 	form=NewGroupForm(user_id=request.user.id)
 	if request.method=="POST":
 		logging.debug('post request')
-		if 'submit' not in request.POST:
+		if 'submit' in request.POST:
 			form=NewGroupForm(request.POST,user_id=request.user.id)
 			if form.is_valid():
 				group_name=form.cleaned_data.get('group_name')
@@ -549,6 +549,7 @@ def my_group(request):
 				logging.debug('formType=2')
 				trForm=TransactionParticipantsForm(request.POST,user_id=request.user.id,group_id=group.group_id)
 				logging.debug('submitted the second form')
+				logging.debug('group id is:'+str(group.group_id))
 				#breakpoint()
 				#import pdb; pdb.set_trace()
 				if trForm.is_valid():
@@ -571,18 +572,18 @@ def my_group(request):
 
 	group1=myGroup.objects.filter(users__in=[user])
 	d=dict()
-	for group in group1:
-		d[group]=0
-	for group in group1:
-		for transactions in group.transaction_set.all():
+	for group2 in group1:
+		d[group2]=0
+	for group2 in group1:
+		for transactions in group2.transaction_set.all():
 			for transdet in transactions.transactiondetail_set.all():
 				credit=transdet.creditor
 				debit=transdet.debitor
 				lent=transdet.lent
 				if credit == user:
-					d[group]=d[group]+lent
+					d[group2]=d[group2]+lent
 				elif debit==user:
-					d[group]=d[group]-lent
+					d[group2]=d[group2]-lent
 	dtuple=dict()
 	for k,v in d.items():
 		dtuple[k]=(v,-v)
@@ -667,33 +668,27 @@ def leave(request,group_id):
 	else:
 		messages.error(request, group_id)
 	global transFormType
-	global participants_list
-	global title
-	global trans_type
-	global date
-	global group
-	global transaction
 	#logger = logging.getLogger(__name__)
 	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 	form=NewGroupForm(user_id=request.user.id)
-	if request.method=="POST":
+	'''if request.method=="POST":
 		logging.debug('post request')
-		if 'submit' in request.POST:
-			form=NewGroupForm(request.POST,user_id=request.user.id)
-			if form.is_valid():
-				group_name=form.cleaned_data.get('group_name')
-				participants=form.cleaned_data.get('users')
-				group_id=myGroup.objects.all().count()
-				#logger.error(group_name)
-				newGrp=myGroup(group_name=group_name,group_id=group_id)
-				newGrp.save()
-				newGrp.users.add(user)
-				for part in participants:
-					newGrp.users.add(part)
-				newGrp.save()
-				return redirect("dashboard:all_groups")
-			else:
-				form=NewGroupForm(user_id=request.user.id)
+		#if 'submit' in request.POST:
+		form=NewGroupForm(request.POST,user_id=request.user.id)
+		if form.is_valid():
+			group_name=form.cleaned_data.get('group_name')
+			participants=form.cleaned_data.get('users')
+			group_id=myGroup.objects.all().count()
+			#logger.error(group_name)
+			newGrp=myGroup(group_name=group_name,group_id=group_id)
+			newGrp.save()
+			newGrp.users.add(user)
+			for part in participants:
+				newGrp.users.add(part)
+			newGrp.save()
+			return redirect("dashboard:all_groups")
+		else:
+			form=NewGroupForm(user_id=request.user.id)
 		else:
 			if transFormType==1:
 				logging.debug('formType=1')
@@ -728,7 +723,7 @@ def leave(request,group_id):
 					transFormType=1
 					transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 				else:
-					transactionForm=TransactionDetailForm(participants_list=participants_list)
+					transactionForm=TransactionDetailForm(participants_list=participants_list)'''
 
 	group1=myGroup.objects.filter(users__in=[user])
 	d=dict()
@@ -747,7 +742,7 @@ def leave(request,group_id):
 	dtuple=dict()
 	for k,v in d.items():
 		dtuple[k]=(v,-v)
-	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form});
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group2, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form});
 
 ############################-----------DELETE GROUP---------########################################3
 
