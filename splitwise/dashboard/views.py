@@ -113,9 +113,10 @@ def personal_page(request):
 	for friend1 in friend:
 		d[friend1]=0
 	for transaction1 in transactions:
+		logging.debug('transaction name'+transaction1.title)	
 		if transaction1.group_id==0 or transaction1.trans_type=="mintrans":
 			tDset=transaction1.transactiondetail_set.all()
-
+			logging.debug('transaction name'+transaction1.title)
 			for transdet in tDset:
 				messages.info(request,f"{transdet.lent} {transdet.creditor}")
 				credit=transdet.creditor
@@ -609,6 +610,7 @@ def my_group(request):
 				group_name=form.cleaned_data.get('group_name')
 				participants=form.cleaned_data.get('users')
 				group_id=myGroup.objects.all().count()
+				messages.info(request,f'{group_id}')
 				#logger.error(group_name)
 				newGrp=myGroup(group_name=group_name,group_id=group_id)
 				newGrp.save()
@@ -623,6 +625,7 @@ def my_group(request):
 
 				for someParti in participants:
 					newTransaction.participants.add(someParti)
+				newTransaction.participants.add(user)
 				newTransaction.save()
 
 				return redirect("dashboard:all_groups")
@@ -901,7 +904,12 @@ def delete(request,group_id):
 	dtuple=dict()
 	for k,v in d.items():
 		dtuple[k]=(v,-v)
-	return render(request,'dashboard/pers_group.html',{'user':user,"group":group,'mydict':dtuple});
+
+	global transFormType
+	#logger = logging.getLogger(__name__)
+	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	form=NewGroupForm(user_id=request.user.id)
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group,"transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form})
 
 def update_pic(request):
 	user_id = request.user.id
@@ -1032,7 +1040,7 @@ def insights(request):
 	typlst = []
 	for row in transactiondetail:
 		dat = row.trans.date
-		dat = dat.strftime('%Y-%m-%d')
+		dat = dat.strftime('%Y-%m-%d %H,%M')
 		datelst.append(dat)
 		j = j + 1
 		mydic={}
@@ -1056,13 +1064,15 @@ def insights(request):
 		dictlst.append((dat,mydic))
 	tlst=[]
 	for w in range(0,i):
-		mylst = {}
+		mylst = []
 		typ = typlst[w]
 		for z in range(0,j):
 			tempdic = dictlst[z][1]
 			if typ in tempdic.keys():
-				mylst[dictlst[z][0]]=tempdic[typ]
-		tlst.append(mylst)
+				mylst.append(([dictlst[z][0]],tempdic[typ]))
+		if mylst not in tlst:
+			tlst.append(mylst)
+	typlst = list(dict.fromkeys(typlst))
 
 	##############################################
 	mydict = {}
@@ -1126,18 +1136,6 @@ def insights(request):
 				mydictl[group] = mydictl[group] + money
 			else:
 				mydictl[group] = money
-	'''for row in transactiondetail:
-		group = row.trans.group.group_name
-		p1 = row.creditor
-		p2 = row.debitor
-		if (p1==user):
-			if group not in mydictl.keys():
-				mydictl[group]=0
-		if (p2==user):
-			if group not in mydicto.keys():
-				mydicto[group]=0
-	sorted(mydicto.keys())
-	sorted(mydictl.keys())'''
 	groups = mydicto.keys()
 	owes = mydicto.values()
 	lents = mydictl.values()
@@ -1166,17 +1164,7 @@ def insights(request):
 				mydictlf[p1] = mydictlf[p1] + money
 			else:
 				mydictlf[p1] = money
-	'''for row in transactiondetail:
-		p1 = row.creditor
-		p2 = row.debitor
-		money = row.lent
-		if (p1==user):
-			if p2 not in mydictlf.keys():
-				mydictlf[p2]=0
-		if (p2==user):
-			if p1 not in mydictof.keys():
-				mydictof[p1]=0
-	sorted(mydictof.keys())
+	'''sorted(mydictof.keys())
 	sorted(mydictlf.keys())'''
 	friends = mydictof.keys()
 	owesf = mydictof.values()
@@ -1187,30 +1175,58 @@ def insights(request):
 
 	##############################################
 
+	def absolute_value(val):
+		a  = np.round(val/100.*sum(pievalues), 0)
+		return a
+
+	def absolute_valuenew(val):
+		a  = np.round(val/100.*sum(pievalues1), 0)
+		return a
+
+	foox = []
+	def flat(l): 
+		for i in l: 
+			if type(i) == list: 
+				flat(i) 
+			else: 
+				foox.append(i)
+
+	##############################################
+	
 	with PdfPages(r'insights.pdf') as export_pdf:
+
 		###############################
-		'''
-		for typ in range(0, i):
-			plt.plot(np.array(tlst[typ].keys()), np.array(tlst[typ].values()))
-		plt.legend()
-		plt.title('Time Series Plot')
-		plt.xlabel('Date and Time')
-		plt.ylabel('Expenditure')
-		export_pdf.savefig()
-		plt.close()
-		'''
+		for typ in range(0, len(typlst)):
+			fig, ax = plt.subplots(figsize=(10, 10))
+			foo = []
+			for bar in tlst[typ]:
+				foo.append(bar[0])
+			flat(foo)
+			fooy = []
+			for bar in tlst[typ]:
+				fooy.append(bar[1])
+			ax.plot(foox, fooy)
+			foox = []
+			plt.legend(typlst[typ::])
+			plt.title('Time Series Plot')
+			plt.xlabel('Date and Time')
+			plt.ylabel('Expenditure')
+			export_pdf.savefig()
+			plt.close()
 
 		###############################
 		fig1, ax1 = plt.subplots()
-		ax1.pie(pievalues, labels=pielabels,autopct='%.2f', startangle=90)
+		ax1.pie(pievalues, labels=pielabels,autopct=absolute_value, startangle=90, shadow=True)
 		ax1.axis('equal')
+		plt.title('Your expenditure spent over food, housing, movies, etc. \n Negative money represents that you owe that much money')
 		export_pdf.savefig(fig1)
 		plt.close()
 
 		###############################
 		fig2, ax2 = plt.subplots()
-		ax2.pie(pievalues1, labels=pielabels1,autopct='%.2f', startangle=90)
+		ax2.pie(pievalues1, labels=pielabels1,autopct=absolute_valuenew, startangle=90, shadow=True)
 		ax2.axis('equal')
+		plt.title('Your expenditure exchanged (given or taken) over friends. \n Positive money represents that your friend owes you \n Negative money represents that your friend lented you')
 		export_pdf.savefig(fig2)
 		plt.close()
 		
@@ -1220,9 +1236,9 @@ def insights(request):
 		p2 = plt.bar(ind, lents, width = widthg)
 		plt.xlabel('Groups')
 		plt.ylabel('Money')
-		plt.title('Money owed and lent in a group')
+		plt.title('Money owed and lent among groups')
 		plt.xticks(ind, groups)
-		#plt.legend((p1[0], p2[0]), ('Owing', 'Lent'))
+		plt.legend((p1[0], p2[0]), ('Owing', 'Lent'))
 		export_pdf.savefig()
 		plt.close()
 
@@ -1233,7 +1249,7 @@ def insights(request):
 		plt.ylabel('Money')
 		plt.title('Money owed and lent among friends')
 		plt.xticks(indf, friends)
-		#plt.legend((p1f[0], p2f[0]), ('Owing', 'Lent'))
+		plt.legend((p1f[0], p2f[0]), ('Owing', 'Lent'))
 		export_pdf.savefig()
 		plt.close()
 
