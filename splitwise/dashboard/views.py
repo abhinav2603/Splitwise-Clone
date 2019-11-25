@@ -610,8 +610,8 @@ def my_group(request):
 
 				for someParti in participants:
 					newTransaction.participants.add(someParti)
-					newTransaction.add(user)
-					newTransaction.save()
+				newTransaction.participants.add(user)
+				newTransaction.save()
 
 				return redirect("dashboard:all_groups")
 			else:
