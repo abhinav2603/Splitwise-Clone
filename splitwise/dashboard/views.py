@@ -681,7 +681,7 @@ def my_group(request):
 	dtuple=dict()
 	for k,v in d.items():
 		dtuple[k]=(v,-v)
-	return render(request,'dashboard/pers_group.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form});
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group1, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form});
 
 def addfriend(request,name):
 	user_id=request.user.id
@@ -894,7 +894,7 @@ def delete(request,group_id):
 	#logger = logging.getLogger(__name__)
 	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 	form=NewGroupForm(user_id=request.user.id)
-	return render(request,'dashboard/pers_group.html',{'user':user,"group":group,"transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form})
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group2,"transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form})
 
 def update_pic(request):
 	user_id = request.user.id
