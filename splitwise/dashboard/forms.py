@@ -68,7 +68,7 @@ class TransactionDetailForm(forms.Form):
 		super(TransactionDetailForm, self).__init__(*args, **kwargs)
 		for participant in self.participants_list:
 			self.fields[str(participant.id)+'gave']=forms.FloatField(label=participant.user_name+' gave')
-			self.fields[str(participant.id)+'share']=forms.FloatField(label=participant.user_name+' share')
+			self.fields[str(participant.id)+'share']=forms.FloatField(label=participant.user_name+' share',required=False)
 
 	def clean(self):
 		form_data=super().clean()
@@ -82,7 +82,8 @@ class TransactionDetailForm(forms.Form):
 
 		for i in participants_ids:
 			total_given=total_given+form_data[str(i)+'gave']
-			total_share=total_share+form_data[str(i)+'share']
+			if form_data[str(i)+'share']:
+				total_share=total_share+form_data[str(i)+'share']
 		logger.debug('total given'+str(total_given))
 		logger.debug('total_share'+str(total_share))
 		logger.debug('total amount'+str(form_data['amount']))
@@ -92,7 +93,7 @@ class TransactionDetailForm(forms.Form):
 			raise forms.ValidationError('Total amount given by participants don\'t match')
 			logging.debug('Total amount given by participants don\'t match')
 			#self._errors['amount']=["Total amount given by participants don't match"]
-		if total_share!=form_data['amount']:
+		if total_share>form_data['amount']:
 			raise forms.ValidationError('Total share of participants don\'t match')
 			logging.debug('Total share of participants don\'t match')
 			#self._errors['amount']=["Total share of participants don't match"]

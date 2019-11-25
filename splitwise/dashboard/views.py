@@ -226,8 +226,23 @@ def handleTransactionDetail(request,trForm,title,trans_type,date,group,participa
 	if trForm.is_valid():
 		gave_extra=[]
 		gave_less=[]
+		totalshares=0
+		totaleq=0
 		for participant in participants_list:
-			given=trForm.cleaned_data.get(str(participant.id)+'gave')-trForm.cleaned_data.get(str(participant.id)+'share')
+			if not trForm.data[str(participant.id)+'share']:
+				totaleq=totaleq+1
+			else:
+				totalshares=totalshares+trForm.cleaned_data.get(str(participant.id)+'share')
+		amount=trForm.cleaned_data.get('amount')
+		logging.debug(str(amount))
+		logging.debug(str(totaleq))
+		logging.debug(str(totalshares))
+		for participant in participants_list:
+			if not trForm.data[str(participant.id)+'share']:
+				given=trForm.cleaned_data.get(str(participant.id)+'gave')-((amount-totalshares)/totaleq)
+				logging.debug(given)
+			else:
+				given=trForm.cleaned_data.get(str(participant.id)+'gave')-trForm.cleaned_data.get(str(participant.id)+'share')
 			if given>0:
 				gave_extra.append([participant,given])
 			else:
