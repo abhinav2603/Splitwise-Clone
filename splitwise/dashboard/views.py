@@ -852,8 +852,8 @@ def insights(request):
 	if request.method=='POST':
 		form=DateRangeForm(request.POST)
 		if form.is_valid():
-			d1=form.cleaned_data.get('d1')
-			d2=form.cleaned_data.get('d2')
+			d1=form.cleaned_data.get('Start_Date')
+			d2=form.cleaned_data.get('End_Date')
 			response = HttpResponse(content_type='text/csv')
 			response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
 
