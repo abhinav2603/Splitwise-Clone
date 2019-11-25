@@ -471,6 +471,7 @@ def group_page(request,group_id):
 	if request.method=="POST":
 		logging.debug('post request')
 		if 'submit' in request.POST:
+			logging.debug("tried to submit")
 			settleForm=GroupSettleForm(request.POST,group_id=group_id,user_id=user_id)
 			if settleForm.is_valid():
 				settleUsers=settleForm.cleaned_data.get('users')
