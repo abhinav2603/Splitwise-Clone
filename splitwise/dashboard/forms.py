@@ -13,9 +13,11 @@ logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class RegisterForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', )
+	first_name=forms.CharField(max_length=75,required=True)
+
+	class Meta:
+		model = User
+		fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', )
 
 
 class DateInput(forms.DateInput):
