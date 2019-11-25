@@ -113,9 +113,10 @@ def personal_page(request):
 	for friend1 in friend:
 		d[friend1]=0
 	for transaction1 in transactions:
+		logging.debug('transaction name'+transaction1.title)	
 		if transaction1.group_id==0 or transaction1.trans_type=="mintrans":
 			tDset=transaction1.transactiondetail_set.all()
-
+			logging.debug('transaction name'+transaction1.title)
 			for transdet in tDset:
 				messages.info(request,f"{transdet.lent} {transdet.creditor}")
 				credit=transdet.creditor
@@ -608,6 +609,7 @@ def my_group(request):
 
 				for someParti in participants:
 					newTransaction.participants.add(someParti)
+				newTransaction.add(user)
 				newTransaction.save()
 
 				return redirect("dashboard:all_groups")
