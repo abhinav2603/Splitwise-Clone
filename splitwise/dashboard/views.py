@@ -13,6 +13,7 @@ from .models import User as myUser, Group as myGroup, Transaction, TransactionDe
 
 import logging
 import datetime
+#from datetime import datetime
 import pdb
 import csv
 LOG_FILENAME = 'views.log'
@@ -213,7 +214,8 @@ def handleTransactionParticipants(request,trForm):
 
 def handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list):
 	user_id=request.user.id
-	newTransaction=Transaction(title=title,trans_type=trans_type,date=date,group=group)
+	ndate=datetime.datetime.combine(date,datetime.datetime.now().time())
+	newTransaction=Transaction(title=title,trans_type=trans_type,date=ndate,group=group)
 	newTransaction.save()
 	for participant in participants_list:
 		newTransaction.participants.add(participant)
@@ -585,7 +587,8 @@ def my_group(request):
 	form=NewGroupForm(user_id=request.user.id)
 	if request.method=="POST":
 		logging.debug('post request')
-		if 'submit' not in request.POST:
+		if 'submit' in request.POST:
+			logging.debug("submit")
 			form=NewGroupForm(request.POST,user_id=request.user.id)
 			if form.is_valid():
 				group_name=form.cleaned_data.get('group_name')
@@ -611,6 +614,7 @@ def my_group(request):
 			else:
 				form=NewGroupForm(user_id=request.user.id)
 		elif 'cancel' in request.POST:
+			logging.debug("Cancelling")
 			transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 			transFormType=1
 			participants_list=[]
