@@ -103,24 +103,28 @@ def personal_page(request):
 	transactions=Transaction.objects.filter(participants__in=[user])
 	friend=user.friends.all()
 	d=dict()
-	for friend in friend:
-		d[friend]=0
-	for transaction in transactions:
-		for transdet in transaction.transactiondetail_set.all():
-			messages.info(request,f"{transdet.lent} {transdet.creditor}")
-			credit=transdet.creditor
-			debit=transdet.debitor
-			lent=transdet.lent
-			if credit == user:
-				if debit in d.keys():
-					d[debit]=d[debit]+lent
-				else:
-					d[debit]=lent
-			elif debit == user:
-				if credit in d.keys():
-					d[credit]=d[credit]-lent
-				else :
-					d[credit]=(-1*lent)
+	for friend1 in friend:
+		d[friend1]=0
+	for transaction1 in transactions:
+		if transaction1.group_id==0 or transaction1.trans_type=="mintrans":
+			tDset=transaction1.transactiondetail_set.all()
+
+			for transdet in tDset:
+				messages.info(request,f"{transdet.lent} {transdet.creditor}")
+				credit=transdet.creditor
+				debit=transdet.debitor
+				lent=transdet.lent
+				if credit == user:
+					if debit in d.keys():
+						d[debit]=d[debit]+lent
+					else:
+						d[debit]=lent
+				elif debit == user:
+					if credit in d.keys():
+						d[credit]=d[credit]-lent
+					else :
+						d[credit]=(-1*lent)
+
 	dtuple=dict()
 	for k,v in d.items():
 		dtuple[k]=(v,-v)
