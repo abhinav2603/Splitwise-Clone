@@ -1,0 +1,83 @@
+{% extends "dashboard/header.html" %}
+
+{% block title %}{{ user.user_name }}'s recent Activities{% endblock %}
+
+{% block brand %} 
+	<img src ="{{ user.dp.url }}" class="rounded-circle" alt=""width=50 height=50> {{ user.user_name }} Activities{% endblock %}
+
+{% block Activitiesactive %}active{% endblock %}
+
+
+{% block content %}
+<div class="container">
+	<div class="card">
+		{% for transaction in transactions %}
+		{%if transaction.trans_type != 'mintrans'%}
+		<div class="card-body">
+			<a href="#"data-toggle="modal" data-target="#modifyModal" onclick="clicked('{{ transaction.id }}','{{ transaction.trans_type }}')">{{ transaction.title }}</a> in the Group: <a href="{% url 'dashboard:group' transaction.group.group_id %}">{{ transaction.group.group_name }}</a>
+				<div class="m-3">
+					<p> {{transaction.trans_type}}</p>
+					{% for transDet in transaction.transactiondetail_set.all %}
+					{% if transDet.debitor.user_name == user.user_name %}
+						{%if transaction.title == "Settled Up"%}
+							<p>You settled up Rs.{{transDet.lent}} owed to {{transDet.creditor.user_name}}</p>
+						{%else%}
+							<p>You owe Rs.{{transDet.lent}} to {{transDet.creditor.user_name}}</p>
+						{%endif%}
+					{% elif transDet.creditor.user_name == user.user_name %}
+						{%if transaction.title == "Settled Up"%}
+							<p>You settled up Rs.{{transDet.lent}} owed by {{transDet.creditor.user_name}}</p>
+						{%else%}
+							<p>{{transDet.debitor.user_name}} owes Rs.{{transDet.lent}} to You</p>
+						{%endif%}
+					{% else %}
+					<p>{{transDet.debitor.user_name}} owes Rs.{{transDet.lent}} to {{transDet.creditor.user_name}}</p>
+					{%endif%}
+					{% endfor %}
+					<p>Comments:<br>{{ transaction.comments }}</p>
+				</div>
+		</div>
+		{%endif%}
+		{%endfor%}
+	</div>
+</div>
+
+	<!-- Modal -->
+  <div class="modal fade" id="modifyModal" tabindex="-1" role="dialog" aria-labelledby="modifyModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">Modify Transaction</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        Leave the title field blank to avoid changing it
+        <form method="post">
+          <div class="modal-body" id="modifyFormBody">
+            {% csrf_token %}
+            {{ modifyForm.as_p }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button id="nxtbtn" type="submit" class="btn btn-primary" value="submit">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+  	function clicked(trans,tag)
+  	{
+  		field=document.getElementById('id_transaction')
+  		field.value=trans
+  		field=document.getElementById('id_tag')
+  		field.value=tag
+  	}
+  </script>
+
+{% endblock %}
+
+
+

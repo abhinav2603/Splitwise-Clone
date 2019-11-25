@@ -7,6 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <!---->
+
+  <style type="text/css">
+    ul.errorlist{display: none;}
+  </style>
 </head>
 <body>
   <!-- navigation bar -->
@@ -24,11 +28,13 @@
           <a class="nav-link" href="{% url 'dashboard:all_groups' %}">Groups</a>
         </li>
         <li class="nav-item {% block Activitiesactive %}{% endblock %}">
-          <a class="nav-link" href="">Activities</a>
+          <a class="nav-link" href="{% url 'dashboard:activity' %}">Activities</a>
         </li>
         <li class="nav-item {% block Insightsactive %}{% endblock %}">
           <a class="nav-link" href="{% url 'dashboard:insights' %}">Insights</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="modal" data-target="#exampleModalCenter">Add Transaction</a>
         <li class="nav-item {% block Profileactive %}{% endblock %}">
           <a class="nav-link" href="{% url 'dashboard:user_profile' %}">Profile</a>
         </li>
@@ -44,11 +50,97 @@
   {% block content %}
   {% endblock %}
 
+
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">Add an Expense</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form method="post">
+          <div class="modal-body" id="formBody">
+            {% csrf_token %}
+            {{ transForm.as_p }}
+          </div>
+          <div class="modal-footer">
+            <form method="post">
+            <button type="submit" class="btn btn-secondary" name="cancel" value="cancel">Cancel</button>
+            </form>
+            <button id="nxtbtn" type="submit" class="btn btn-primary" value="submitTrans" onclick="nextClick()">Next</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% if transForm.errors %}
+      {% for field in transForm %}
+          {% for error in field.errors %}
+              <div class="alert alert-danger alert-dismissible">{{ field.name }}:{{ error|escape }}<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+              </div>
+          {% endfor %}
+      {% endfor %}
+      {% for error in transForm.non_field_errors %}
+          <div class="alert alert-danger alert-dismissible">
+              {{ error|escape }}<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          </div>
+      {% endfor %}
+  {% endif %}
+
+
   <!--for bootstrap -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
   <!---->
+
+  <script type="text/javascript">
+    //trType=1;
+    btn=document.getElementById('nxtbtn');
+    form=document.getElementById('formBody');
+
+    if({{ trType }}==2)
+    {
+      //form.show=true;
+      $(document).ready(function(){
+      // Show the Modal on load
+      $("#exampleModalCenter").modal("show");
+      });
+    }
+    if({{ trType }}==3)
+    {
+      btn.textContent="Done";
+      //form.show=true;
+      $(document).ready(function(){
+      // Show the Modal on load
+      $("#exampleModalCenter").modal("show");
+      });
+    }
+
+    /*function nextClick()
+    {
+      btn=document.getElementById('nxtbtn');
+      form=document.getElementById('formBody');
+      if(btn.textContent=="Next")
+      {
+        form.show="true";
+        if({{ trType }}==2)
+          btn.textContent="Done";
+        //trType+=1;
+      }
+      else
+      {
+        btn.textContent="Next";
+        //trType=1;
+      }
+    }*/
+  </script>
+
+
 
   
 

@@ -8,9 +8,42 @@
 
 
 {% block content %}
+<br>
+<br><br>
 <div class="container">
-<h3> Click the button below to see full detailed insight of your expenditure </h3>
-<button type="button" class="btn btn-info" ><a href="{% url 'dashboard:pdf_view' %}">Print Report</a></button>
+    <div id="accordion">
+      <div class="card">
+        <div class="card-header">
+          <a class="card-link" data-toggle="collapse" href="#collapseOne">
+            Expenditure Insights
+          </a>
+        </div>
+        <div id="collapseOne" class="collapse" data-parent="#accordion">
+          <div class="card-body">
+						<button style="background-color:#F4EB16; color:blue"type="button" class="btn btn-info" ><a href="{% url 'dashboard:pdf_view' %}">Print Report</a></button><br><br>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+					<div class="card-header">
+						<a class="collapsed card-link" data-toggle="collapse" href="#collapseTwo">
+						Excel SheetZ
+					</a>
+					</div>
+					<div id="collapseTwo" class="collapse" data-parent="#accordion">
+						<div class="card-body">
+								<form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button style="background-color:#F4EB16; color:blue" class="btn btn-outline-info" type="submit" value="submit">Go</button>
+								</form>
+						</div>
+					</div>
+			</div>
+		</div>
+</div>
+
+
 </div>
 
 {% endblock %}
