@@ -585,12 +585,13 @@ def my_group(request):
 	form=NewGroupForm(user_id=request.user.id)
 	if request.method=="POST":
 		logging.debug('post request')
-		if 'submit' not in request.POST:
+		if 'submit' in request.POST:
 			form=NewGroupForm(request.POST,user_id=request.user.id)
 			if form.is_valid():
 				group_name=form.cleaned_data.get('group_name')
 				participants=form.cleaned_data.get('users')
 				group_id=myGroup.objects.all().count()
+				messages.info(request,f'{group_id}')
 				#logger.error(group_name)
 				newGrp=myGroup(group_name=group_name,group_id=group_id)
 				newGrp.save()
@@ -882,7 +883,12 @@ def delete(request,group_id):
 	dtuple=dict()
 	for k,v in d.items():
 		dtuple[k]=(v,-v)
-	return render(request,'dashboard/pers_group.html',{'user':user,"group":group,'mydict':dtuple});
+
+	global transFormType
+	#logger = logging.getLogger(__name__)
+	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
+	form=NewGroupForm(user_id=request.user.id)
+	return render(request,'dashboard/pers_group.html',{'user':user,"group":group,"transForm":transactionForm,"trType":transFormType,'mydict':dtuple,"form":form})
 
 def update_pic(request):
 	user_id = request.user.id
