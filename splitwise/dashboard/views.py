@@ -225,8 +225,23 @@ def handleTransactionDetail(request,trForm,title,trans_type,date,group,participa
 	if trForm.is_valid():
 		gave_extra=[]
 		gave_less=[]
+		totalshares=0
+		totaleq=0
 		for participant in participants_list:
-			given=trForm.cleaned_data.get(str(participant.id)+'gave')-trForm.cleaned_data.get(str(participant.id)+'share')
+			if not trForm.data[str(participant.id)+'share']:
+				totaleq=totaleq+1
+			else:
+				totalshares=totalshares+trForm.cleaned_data.get(str(participant.id)+'share')
+		amount=trForm.cleaned_data.get('amount')
+		logging.debug(str(amount))
+		logging.debug(str(totaleq))
+		logging.debug(str(totalshares))
+		for participant in participants_list:
+			if not trForm.data[str(participant.id)+'share']:
+				given=trForm.cleaned_data.get(str(participant.id)+'gave')-((amount-totalshares)/totaleq)
+				logging.debug(given)
+			else:
+				given=trForm.cleaned_data.get(str(participant.id)+'gave')-trForm.cleaned_data.get(str(participant.id)+'share')
 			if given>0:
 				gave_extra.append([participant,given])
 			else:
@@ -472,8 +487,8 @@ def group_page(request,group_id):
 	global transaction
 	user_id=request.user.id
 	user=get_object_or_404(myUser, pk=user_id)
-	group = get_object_or_404(myGroup,group_id=group_id)
-	transactions=group.transaction_set.all()
+	group1 = get_object_or_404(myGroup,group_id=group_id)
+	transactions=group1.transaction_set.all()
 	transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 	settleForm=GroupSettleForm(group_id=group_id,user_id=user_id)
 	if request.method=="POST":
@@ -494,7 +509,7 @@ def group_page(request,group_id):
 							elif (user == transdet.debitor) & (friend == transdet.creditor):
 								l=l-transdet.lent	
 					if l > 0:
-						newtrans=Transaction(group=group,title='Settled Up',trans_type='SettleUp',date=today)
+						newtrans=Transaction(group=group1,title='Settled Up',trans_type='SettleUp',date=today)
 						newtrans.save()
 						newtrans.participants.add(user)
 						newtrans.participants.add(friend)
@@ -502,7 +517,7 @@ def group_page(request,group_id):
 						newtransdet=TransactionDetail(trans=newtrans,creditor=friend,debitor=user,lent=l)
 						newtransdet.save()
 					elif l < 0:
-						newtrans=Transaction(group=group,title='Settled Up',trans_type='SettleUp',date=today)
+						newtrans=Transaction(group=group1,title='Settled Up',trans_type='SettleUp',date=today)
 						newtrans.save()
 						newtrans.participants.add(user)
 						newtrans.participants.add(friend)
@@ -558,7 +573,7 @@ def group_page(request,group_id):
 					transactionForm=TransactionDetailForm(participants_list=participants_list)
 
 	dtuple=dict()
-	for transactions in group.transaction_set.exclude(trans_type="mintrans"):
+	for transactions in group1.transaction_set.exclude(trans_type="mintrans"):
 		for transdet in transactions.transactiondetail_set.all():
 			credit=transdet.creditor
 			debit=transdet.debitor
@@ -568,7 +583,7 @@ def group_page(request,group_id):
 			messages.info(request,f'{lent}')
 			dtuple[transdet]=(lent,-lent,credit,debit)
 
-	return render(request,'dashboard/group_page.html',{'user':user,"group":group, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,'groupSettleForm':settleForm})
+	return render(request,'dashboard/group_page.html',{'user':user,"group":group1, "transForm":transactionForm,"trType":transFormType,'mydict':dtuple,'groupSettleForm':settleForm})
 
 ##########################################################################################
 
