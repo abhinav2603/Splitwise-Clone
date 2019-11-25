@@ -13,6 +13,7 @@ from .models import User as myUser, Group as myGroup, Transaction, TransactionDe
 
 import logging
 import datetime
+#from datetime import datetime
 import pdb
 import csv
 LOG_FILENAME = 'views.log'
@@ -112,9 +113,10 @@ def personal_page(request):
 	for friend1 in friend:
 		d[friend1]=0
 	for transaction1 in transactions:
+		logging.debug('transaction name'+transaction1.title)	
 		if transaction1.group_id==0 or transaction1.trans_type=="mintrans":
 			tDset=transaction1.transactiondetail_set.all()
-
+			logging.debug('transaction name'+transaction1.title)
 			for transdet in tDset:
 				messages.info(request,f"{transdet.lent} {transdet.creditor}")
 				credit=transdet.creditor
@@ -213,7 +215,8 @@ def handleTransactionParticipants(request,trForm):
 
 def handleTransactionDetail(request,trForm,title,trans_type,date,group,participants_list):
 	user_id=request.user.id
-	newTransaction=Transaction(title=title,trans_type=trans_type,date=date,group=group)
+	ndate=datetime.datetime.combine(date,datetime.datetime.now().time())
+	newTransaction=Transaction(title=title,trans_type=trans_type,date=ndate,group=group)
 	newTransaction.save()
 	for participant in participants_list:
 		newTransaction.participants.add(participant)
@@ -586,6 +589,7 @@ def my_group(request):
 	if request.method=="POST":
 		logging.debug('post request')
 		if 'submit' in request.POST:
+			logging.debug("submit")
 			form=NewGroupForm(request.POST,user_id=request.user.id)
 			if form.is_valid():
 				group_name=form.cleaned_data.get('group_name')
@@ -606,12 +610,14 @@ def my_group(request):
 
 				for someParti in participants:
 					newTransaction.participants.add(someParti)
-				newTransaction.save()
+					newTransaction.add(user)
+					newTransaction.save()
 
 				return redirect("dashboard:all_groups")
 			else:
 				form=NewGroupForm(user_id=request.user.id)
 		elif 'cancel' in request.POST:
+			logging.debug("Cancelling")
 			transactionForm=TransactionForm(initial={'transType':'Others','date':datetime.date.today()},user_id=user_id)
 			transFormType=1
 			participants_list=[]
