@@ -935,7 +935,7 @@ def insights(request):
 			response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
 
 			writer = csv.writer(response)
-			write.writerow(['Creditor','Debitor','Amount','Date','Title','Tag','Group'])
+			writer.writerow(['Creditor','Debitor','Amount','Date','Title','Tag','Group'])
 			transactions=Transaction.objects.filter(date__gte=d1).filter(date__lte=d2)
 			d=dict()
 			for trans in transactions:
