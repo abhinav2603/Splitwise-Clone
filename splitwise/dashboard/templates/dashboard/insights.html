@@ -11,7 +11,13 @@
 <div class="container">
 <h3> Click the button below to see full detailed insight of your expenditure </h3>
 <button type="button" class="btn btn-info" ><a href="{% url 'dashboard:pdf_view' %}">Print Report</a></button><br><br>
-<button type="button" class="btn btn-info" ><a href="{% url 'dashboard:xlview' %}">Excel</a></button>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button style="background-color:rgb(153, 150, 67); color:blue" class="btn btn-outline-info" type="submit" value="submit">Done!</button>
+</form>
+
 </div>
 
 {% endblock %}

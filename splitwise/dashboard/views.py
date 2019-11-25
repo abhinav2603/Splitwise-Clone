@@ -849,8 +849,35 @@ def insights(request):
 	#transaction = Transaction.objects.filter(participants__in=[user]).order_by('date')
 	transactiondetail = TransactionDetail.objects.filter(Q(creditor__in = [user]) | Q(debitor__in = [user])).order_by('trans__date')
 	form=DateRangeForm()
-	#if request.method=='POST':
-	#	form=D
+	if request.method=='POST':
+		form=DateRangeForm(request.POST)
+		if form.is_valid():
+			d1=form.cleaned_data.get('d1')
+			d2=form.cleaned_data.get('d2')
+			response = HttpResponse(content_type='text/csv')
+			response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+			writer = csv.writer(response)
+			write.writerow(['Creditor','Debitor','Amount','Date','Title','Tag','Group'])
+			transactions=Transaction.objects.filter(date__gte=d1).filter(date__lte=d2)
+			d=dict()
+			for trans in transactions:
+				for transdet in trans.transactiondetail_set.all():
+					credit=transdet.creditor
+					debit=transdet.debitor
+					lent=transdet.lent
+					if credit == user:
+						writer.writerow([user.user_name,debit.user_name,lent,trans.date,trans.title,trans.trans_type,trans.group])
+					elif debit == user:
+						writer.writerow([credit.user_name,debit.user_name,lent,trans.date,trans.title,trans.trans_type,trans.group])
+
+			#writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
+			#writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
+
+			return response
+		else:
+			form=DateRangeForm(request.POST)
+
 
 	##############################################	
 	dictlst = []
@@ -1065,7 +1092,7 @@ def insights(request):
 		export_pdf.savefig()
 		plt.close()
 
-	return render(request,'dashboard/insights.html',{'user':user}); 
+	return render(request,'dashboard/insights.html',{'user':user,'form':form}); 
 
 def pdf_view(request):
 	with open('insights.pdf', 'rb') as pdf:
